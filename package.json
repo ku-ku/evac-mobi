@@ -1,0 +1,29 @@
+{
+  "name": "evac-mobi",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start",
+    "generate": "nuxt generate"
+  },
+  "dependencies": {
+    "core-js": "^3.19.3",
+    "jquery": "^3.6.0",
+    "moment": "^2.29.4",
+    "nats.ws": "^1.9.0",
+    "nuxt": "^2.15.8",
+    "ol": "^6.15.1",
+    "vue": "^2.6.14",
+    "vue-server-renderer": "^2.6.14",
+    "vue-template-compiler": "^2.6.14",
+    "vuetify": "^2.6.1",
+    "webpack": "^4.46.0",
+    "websocket": "^1.0.34"
+  },
+  "devDependencies": {
+    "@nuxtjs/proxy": "^2.0.1",
+    "@nuxtjs/vuetify": "^1.12.3"
+  }
+}
