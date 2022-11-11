@@ -35,12 +35,19 @@
                         <v-btn type="submit" 
                                tile
                                :loading="pending"
-                               dark color="red darken-4" >Войти</v-btn>
+                               dark 
+                               :color="has('user') ? 'primary' : 'red darken-4'" >
+                            <template v-if="has('user')">
+                                <v-icon>mdi-check-circle-outline</v-icon>&nbsp;ok
+                            </template>
+                            <template v-else>
+                                Войти
+                            </template>
+                        </v-btn>
                     </v-card-actions>
                     <v-footer>
                         <v-spacer />
                         <span v-html="server"></span>
-                        &nbsp;<eva-link-status />
                     </v-footer>
                 </v-card>
             </v-form>
@@ -62,11 +69,23 @@ const USER_DEFS = {
 export default {
   name: 'SignInPage',
   layout: 'empty',
+  fetchOnServer: false,
   components: {
       EvaLinkStatus
   },
-  data() {
-    return {
+    async asyncData({store}){
+        var preauth = false;
+        try {
+            preauth = await store.dispatch("profile/preauth");
+        } catch(e) {
+            console.log('ERR (preauth)', e);
+        }
+        return {
+            preauth
+        };
+    },
+    data() {
+        return {
             valid: false,
             pending: false,
             user: {id: null, u: null, p: null, tenant: null},
@@ -78,6 +97,14 @@ export default {
             title: 'Авторизация'
         };
     },
+    mounted(){
+        if (this.preauth){
+            this.user = this.$store.state.profile.subject;
+            setTimeout( () => {
+                    this.$router.replace({name: 'index'});
+            }, 300);
+        }
+    },
     computed: {
         title(){
             if ( this.has('user') ){
@@ -87,19 +114,6 @@ export default {
         },
         server(){
             return this.$store.getters["branding/get"]("brand.server.name");
-        },
-        icoquality(){
-            const quality = this.$store.state.settings.quality;
-            switch (quality) {
-                case 1:
-                    return {color:'default', icon: 'mdi-network-strength-4'};
-                case 2:
-                    return {color:'default', icon: 'mdi-network-strength-3'};
-                case 3:
-                    return {color:'deep-orange accent-3', icon: 'mdi-network-strength-2-alert'};
-                default:
-                    return {color:'orange darken-4', icon: 'mdi-network-strength-off-outline'};
-            }
         }
     },
     methods: {
@@ -112,7 +126,7 @@ export default {
             }
             return false;
         },
-        async onauth() {
+        async onauth(){
             const {u, p} = this.user;
             if ( isEmpty(u) || isEmpty(p) ) {
                 this.valid = false;

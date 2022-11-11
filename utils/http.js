@@ -45,8 +45,15 @@ function prepareParams(params) {
 }   //getDate
 
 const http = options => {
+    const getts = $nuxt.$store.getters;
+    const env = getts["settings/env"](),
+          token = getts["profile/token"];
     
-    const env = $nuxt.$store.getters["settings/env"]();
+    if ( isEmpty(options.auth) ) {
+        if ( !isEmpty(token) ){
+            options.auth = "Bearer " + token;
+        }
+    }
     
     const now = new Date();
     const defaultContext = {
@@ -61,6 +68,12 @@ const http = options => {
         contentType: 'application/json;charset=utf-8'
     };
 
+    if ( !isEmpty(options.auth) ) {
+        params.beforeSend = function(xhr) {
+            xhr.setRequestHeader('Authorization', options.auth);
+        };
+    }
+
     switch (options.type) {
         case 'api-call':
             params = Object.assign(params, options);
@@ -73,11 +86,6 @@ const http = options => {
                 method: 'web.AuthFunctions.getCurrentUserCredential',
                 jsonrpc: '2.0'
             };
-            if ( !isEmpty(options.auth) ) {
-                params.beforeSend = function(xhr) {
-                    xhr.setRequestHeader('Authorization', options.auth);
-                };
-            }
             break;
         case 'core-read':
             params.url = env.rpcUrl + '?d=jsonRpc';
@@ -86,6 +94,20 @@ const http = options => {
                     params: [{
                             query: options.query,
                             context: options.context || defaultContext
+                    }],
+                    jsonrpc: '2.0'
+                };
+            break;
+        case 'core-update':
+            params.url = env.rpcUrl + '?d=jsonRpc';
+            params.data = {
+                    method: 'ru.kih.sin.api2.Core.update',
+                    params: [{
+                        query: options.query,
+                        context: options.context || defaultContext,
+                        params: prepareParams(options.params),
+                        offset: 0,
+                        count: -1
                     }],
                     jsonrpc: '2.0'
                 };
@@ -105,6 +127,7 @@ const http = options => {
        ){
         params.data = JSON.stringify(params.data);
     }
+    
     return $.ajax(params);
 };   //http
 

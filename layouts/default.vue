@@ -16,7 +16,7 @@
     </v-app-bar>
     <v-main>
       <v-container>
-        <Nuxt />
+        <Nuxt :keep-alive-props="{ exclude: ['auth'] }" />
       </v-container>
     </v-main>
     <v-footer app>
@@ -71,13 +71,14 @@ export default {
             return false;
         },
         logout(){
-            this.$store.dispatch("profile/logout");
-            window.location.reload();
+            this.$store.dispatch("profile/logout").then(()=>{
+                this.$router.replace({name: "auth"});
+            });
         }
     },
     computed: {
         title(){
-            var s = this.user?.title,
+            var s = this.user?.title || '',
                 t = this.user?.tenants[this.user?.tenantId];
             if (!!t){
                 s += `<div class="ev-tenant text-truncate">${ t.title }</div>`;

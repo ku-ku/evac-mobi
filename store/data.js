@@ -8,20 +8,44 @@ export const _SIN2_VIEWS_IDS = {
     transport:'sin2:/v:f9b71490-6635-4f2f-b2b3-d4ed8a90b0c2/?sort=-evacoffensejournal.regnum'
 };
 
+const _sin2objNq = ( sin2res ) => {
+    const {fields, data} = sin2res;
+    if (
+            (!!data)
+         && Array.isArray(data)
+       ){
+       var res = [];
+       data.forEach( d => {
+           var o = {};
+           fields.forEach( (f, n) => {
+               o[f] = d[n];
+           });
+           res.push(o);
+       });
+       return res;
+    } else {
+        return null;
+    }
+};
 
 /**
  * Map sin2 result to json-plain obj`s
  * @param {Object} result of sin2 jsonRps query
  * @returns {Array|sin2obj.res}
  */
-const sin2obj = ( {columnIndexes, data} ) => {
+export const sin2obj = ( sin2res ) => {
+    if (!sin2res.columnIndexes){
+        return _sin2objNq(sin2res);
+    }
+    
+    const {columnIndexes, data} = sin2res;
     if (
             (!!data)
          && Array.isArray(data)
        ){
         const keys = Object.keys(columnIndexes);
         var res = [];
-        data.map( e => {
+        data.forEach( e => {
             var s, n, o = {};
             keys.map( key => {
                 n = key.split('.');
@@ -39,7 +63,6 @@ const sin2obj = ( {columnIndexes, data} ) => {
         return null;
     }
 };
-
 
 export const state = ()=>({
     statuses: null,
@@ -62,25 +85,26 @@ export const mutations = {
 export const actions = {
     read({ commit, state }, payload) {
         return new Promise( async (resolve, reject) => {
-            if (!!state[payload]){
+            if (state[payload]){
                 resolve();
-            }
-            try {
-                const opts = {
-                    type: 'core-read',
-                    query: _SIN2_VIEWS_IDS[payload]
-                };
-                const res = await $nuxt.api(opts);
-                if (!!res.error){
-                    throw res.error;
+            } else {
+                try {
+                    const opts = {
+                        type: 'core-read',
+                        query: _SIN2_VIEWS_IDS[payload]
+                    };
+                    const res = await $nuxt.api(opts);
+                    if (!!res.error){
+                        throw res.error;
+                    }
+                    const o = {};
+                    o[payload] = sin2obj(res.result);
+                    commit("set", o);
+                    resolve();
+                } catch(e) {
+                    console.log('ERR (data/read)', e);
+                    reject(e);
                 }
-                const o = {};
-                o[payload] = sin2obj(res.result);
-                commit("set", o);
-                resolve();
-            } catch(e) {
-                console.log('ERR (data/read)', e);
-                reject(e);
             }
         });
     },  //read

@@ -135,6 +135,16 @@
                                 <div class="meta">
                                     <div class="addr"><v-icon x-small>mdi-map-marker-outline</v-icon>{{ t.offenseaddress }}</div>
                                     <div class="parking"><v-icon x-small>mdi-map-marker-radius</v-icon>стоянка:&nbsp;{{ t.evacoffensejournalParkingidName }}</div>
+                                    <div class="wait d-block d-sm-none ml-auto">
+                                        <v-icon x-small>mdi-clock-outline</v-icon>
+                                        {{t.arrivaltime.replace(/\D+/, ':') }}
+                                    </div>
+                                </div>
+                                <div class="meta">
+                                    <div class="status">
+                                        <v-icon x-small>mdi-flag-variant</v-icon>
+                                        {{ t.evacoffensejournalStateidName }}
+                                    </div>
                                     <div class="phone ml-sm-auto"
                                          v-if="!empty(t.evacoffensejournalParkingidPhone)">
                                         <v-tooltip bottom>
@@ -147,10 +157,6 @@
                                             </template>
                                             <span>позвонить на стоянку</span>
                                         </v-tooltip>    
-                                    </div>
-                                    <div class="wait d-block d-sm-none ml-auto">
-                                        <v-icon x-small>mdi-clock-outline</v-icon>
-                                        {{t.arrivaltime.replace(/\D+/, ':') }}
                                     </div>
                                 </div>
                             </v-col>
@@ -303,6 +309,7 @@ export default {
             }
             & .vehicle{
                 line-height: 1.125;
+                text-align: left;
                 & .gov{
                     font-size: 1.25rem;
                     text-transform: uppercase;
