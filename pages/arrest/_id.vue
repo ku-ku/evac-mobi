@@ -1,7 +1,9 @@
 <template>
     <v-form v-on:submit.stop.prevent="save"
+            ref="form"
             :readonly="readonly">
-        <v-card class="ev-arrest">
+        <v-card class="ev-arrest"
+                tile>
             <v-toolbar dark
                        elevation="0"
                        color="primary">
@@ -21,6 +23,14 @@
                     </v-btn>
                 </v-toolbar-title>
             </v-toolbar>
+            <v-card-title>
+                <template v-if="has('new')"> 
+                    <v-icon>mdi-plus</v-icon>&nbsp;Новая заявка
+                </template>
+                <template v-else>
+                    <v-icon>mdi-application-edit-outline</v-icon>&nbsp;Редактирование
+                </template>
+            </v-card-title>
             <v-card-text>
                 <v-row>
                     <v-col cols="12">
@@ -130,7 +140,7 @@
                     </v-col>
                 </v-row>
             </v-card-text>
-            <v-card-actions>
+            <v-card-actions class="py-5">
                 <v-btn color="grey"
                        outlined
                        replace
@@ -152,8 +162,13 @@ import { isEmpty, MODES, NULL_ID  } from "~/utils/";
 import geo from "~/utils/geo.js";
 const $moment = require('moment');
 $moment.locale('ru');
+const utcOff = $moment().utcOffset();
+
 
 import { _SIN2_VIEWS_IDS } from '~/store/data.js';
+
+const _VIEW_ID = "f9b71490-6635-4f2f-b2b3-d4ed8a90b0c2";
+const _VIEW_URI= `sin2:/v:${ _VIEW_ID }`;
 
 export default {
     name: "EvArrest",
@@ -176,6 +191,7 @@ export default {
             arrivaltime: null
         };
         if ( isEmpty(row.id) ){
+            row.id = NULL_ID;
             row.at = $moment();
             row.coords = await store.dispatch("geo/current");
         } else {
@@ -203,7 +219,7 @@ export default {
             return;
         }
         //Def`s for new record
-        if ( isEmpty(this.row.id) ){
+        if ( this.has('new') ){
             /** defs: status, parking */
             this.statuses?.map( s => {
                 if (/^(новая)+/gi.test(s.name)){
@@ -217,7 +233,6 @@ export default {
                 this.row.parkingid = this.parkings[0].id;
                 this.onparking(this.row.parkingid);
             }
-            
             
             if ( 
                     (!!this.cities)
@@ -284,10 +299,65 @@ export default {
             switch(q){
                 case "fine":
                     return !!this.$store.state.geo.ll.fine;
+                case 'new':
+                    return (NULL_ID === this.row.id);
             }
             return false;
         },
-        save(){
+        async save(){
+            if ( !this.$refs["form"].validate() ){
+                return false;
+            }
+            const opts = {
+                    type: "core-update",
+                    query: _VIEW_URI,
+                    params: [
+                                {id: 'at',              type: 'datetime', value: moment(this.row.at).add(utcOff,'minutes').toDate()},
+                                {id: 'city',            type: 'id', value: row.city},
+                                {id: 'stateid',         type: 'id', value: row.stateid},
+                                {id: 'vehiclekindname', type: 'string', value: row.vehiclekindname},
+                                {id: 'vehicleregnum',   type: 'string', value: row.vehicleregnum},
+                                {id: 'offensereason',   type: 'string', value: row.offensereason},
+                                {id: 'offensereason',   type: 'string', value: row.offenseaddress},
+                    ]
+            }   //opts
+            if (!!this.row.arrivaltime){
+                opts.params.push({id: 'arrivaltime', type: 'datetime',value: moment(this.row.arrivaltime).add(utcOff,'minutes').toDate()});
+            }
+            if (!!this.row.vehicleevacid){
+                opts.params.push({id: 'vehicleevacid', type: 'id', value: row.vehicleevacid});
+            }
+            if (!!this.row.parkingid){
+                opts.params.push({id: 'parkingid', type: 'id', value: row.parkingid});
+            }
+            
+            if (this.row.id === NULL_ID){
+                opts.type = "core-create";
+            } else {
+                opts.params.push({id: 'id', type: 'id',  value: this.row.id});
+            }
+
+            this.mode = MODES.saving;
+            
+            try {
+                const res = await $nuxt.api(opts);
+                console.log(res);
+                if (res.result){
+                    this.mode = MODES.success;
+                } else {
+                    throw res.error;
+                }
+                
+                const id = (this.row.id === NULL_ID) ? res.result[_VIEW_ID] : this.row.id;
+                this.$emit('success', id);
+                
+            } catch(e){
+                this.mode = MODES.error;
+                this.error = e;
+                console.log('ERR (save)', e);
+            } 
+                    
+            
             return false;
         },
         onparking(id){
