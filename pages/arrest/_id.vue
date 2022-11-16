@@ -1,5 +1,6 @@
 <template>
-    <v-form v-on:submit.stop.prevent="save">
+    <v-form v-on:submit.stop.prevent="save"
+            :readonly="readonly">
         <v-card class="ev-arrest">
             <v-toolbar dark
                        elevation="0"
@@ -29,6 +30,7 @@
                                     hide-details
                                     :return-object="false"
                                     :items="cities"
+                                    :rules="[ rules.empty ]" 
                                     v-model="row.city">
                         </v-autocomplete>
                     </v-col>
@@ -46,8 +48,10 @@
                                     item-text="name"
                                     item-value="id"
                                     hide-details
+                                    eager
                                     :return-object="false"
                                     :items="statuses"
+                                    :rules="[ rules.empty ]" 
                                     v-model="row.stateid">
                         </v-autocomplete>
                     </v-col>
@@ -58,8 +62,9 @@
                                         v-model="row.vehiclekindname"
                                         item-text="vehiclekindname"
                                         item-value="vehiclekindname"
-                                        eager
                                         hide-details
+                                        eager
+                                        :rules="[ rules.empty ]" 
                                         :items="vcmarks">
                         </v-combobox>
                     </v-col>
@@ -67,6 +72,7 @@
                         <v-text-field label="Гос.знак"
                                       v-model="row.vehicleregnum"
                                       clearable
+                                      :rules="[ rules.empty ]" 
                                       hide-details>
                         </v-text-field>
                     </v-col>
@@ -77,6 +83,7 @@
                                     item-text="govnum"
                                     item-value="id"
                                     hide-details
+                                    eager
                                     :items="evacs"
                                     v-model="row.vehicleevacid">
                             <template v-slot:item="{ item }">
@@ -94,6 +101,7 @@
                                     item-text="name"
                                     item-value="id"
                                     hide-details
+                                    eager
                                     :items="parkings"
                                     v-on:input="onparking"
                                     v-model="row.parkingid">
@@ -106,7 +114,9 @@
                                     v-model="row.offensereason"
                                     item-text="offensereason"
                                     item-value="offensereason"
+                                    eager
                                     :items="causes"
+                                    :rules="[ rules.empty ]" 
                                     hide-details>
                         </v-combobox>
                     </v-col>
@@ -138,7 +148,7 @@
 </template>
 <script>
 import { mapState } from 'vuex';
-import { isEmpty } from "~/utils/";
+import { isEmpty, MODES, NULL_ID  } from "~/utils/";
 import geo from "~/utils/geo.js";
 const $moment = require('moment');
 $moment.locale('ru');
@@ -154,11 +164,11 @@ export default {
             try {
                 await store.dispatch("data/read", k);
             } catch(e){
-                console.log(`ERR (${ k })`, e);
+                console.log('ERR (' + k + ')', e);
             }
         });
         
-        var row = {
+        let row = {
             id: params.id,
             stateid: null,
             city: null,
@@ -178,6 +188,16 @@ export default {
             row
         };
     },
+    data(){
+        return {
+            MODES, 
+            mode: MODES.default,
+            rules: {
+                empty: val => !isEmpty(val) || "Необходимо заполнить"
+            }
+        };
+    },
+    
     async fetch(){
         if (!this.row){
             return;
@@ -213,6 +233,9 @@ export default {
         }   // if ( isEmpty...
     },
     computed: {
+        readonly(){
+            return this.mode !== MODES.default;
+        },
         address(){
             if ( isEmpty(this.row?.id) ) {
                 return geo.a2s(this.$store.state.geo.addr?.address);

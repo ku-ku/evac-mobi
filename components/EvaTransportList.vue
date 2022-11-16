@@ -201,8 +201,7 @@ export default {
     async fetch(){
         this.error = null;
         try {
-            await this.$store.dispatch("data/read", "transport");
-            this.all = this.$store.state.data.transport;
+            this.all = await this.$store.dispatch("data/transport");
             const dt = $moment();
             this.at = `${ dt.format("HH:mm") }<small>${ dt.format("DD.MM.YYYY") }</small>`;
             this.page = 1;

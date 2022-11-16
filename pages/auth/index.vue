@@ -1,7 +1,10 @@
 <template>
     <v-row class="ev-profile fill-height" justify="center" align="center">
         <v-col cols="11" sm="8">
-            <v-form v-on:submit.stop.prevent="onauth" action="#" v-model="valid">
+            <v-form v-on:submit.stop.prevent="onauth" 
+                    action="#" 
+                    ref="form"
+                    v-model="valid">
                 <v-card class="elevation-3">
                     <v-card-title>
                         <div class="form-icon">
@@ -128,8 +131,7 @@ export default {
         },
         async onauth(){
             const {u, p} = this.user;
-            if ( isEmpty(u) || isEmpty(p) ) {
-                this.valid = false;
+            if (!this.$refs["form"].validate()) {
                 this.error = 'Для входа необходимо ввести Ваши e-mail и пароль';
                 $('input[name="u"]').trigger('focus');
                 return false;
@@ -137,10 +139,11 @@ export default {
             this.error = '';
             this.pending = true;
             try {
+                await this.$store.dispatch('profile/logout');
                 const res = await this.$store.dispatch('profile/login', this.user);
                 
                 this.user.title = res.title;
-                this.user.tenant = res.tenants[res.tenantId].title;
+                this.user.tenant = res.tenants[res.tenantId].title || '';
                 this.user.id = res.id;
                 setTimeout( () => {
                     this.$router.replace({name: 'index'});

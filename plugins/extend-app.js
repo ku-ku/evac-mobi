@@ -135,7 +135,7 @@ export default async function( ctx ){
                 })();
                 
                 if (!qaHellow){
-                    qaHellow = setInterval(this.bepooling, 60*1000);
+                    qaHellow = setInterval(this.bepooling, 5*60*1000);
                 }
             },
         },       //methods
