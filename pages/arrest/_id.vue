@@ -356,13 +356,14 @@ export default {
                 }
                 
                 const id = (this.row.id === NULL_ID) ? res.result[_VIEW_ID] : this.row.id;
-                this.$emit('success', id);
-                
+                setTimeout(()=>{
+                    this.$router.replace({name: "index"});
+                }, 666);
             } catch(e){
                 this.mode = MODES.error;
                 this.error = e;
                 console.log('ERR (save)', e);
-            } 
+            }
                     
             
             return false;
