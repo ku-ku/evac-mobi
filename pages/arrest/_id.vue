@@ -167,7 +167,7 @@ const utcOff = $moment().utcOffset();
 
 import { _SIN2_VIEWS_IDS } from '~/store/data.js';
 
-const _VIEW_ID = "f9b71490-6635-4f2f-b2b3-d4ed8a90b0c2";
+const _VIEW_ID = "8190818d-bf31-41d3-8e3c-08582b85f7e9";
 const _VIEW_URI= `sin2:/v:${ _VIEW_ID }`;
 
 export default {
@@ -198,6 +198,10 @@ export default {
             const res = await store.dispatch("data/transport", params.id);
             row = {...res[0]};
             row.at = $moment(row.createdt);
+            row.coords = {
+                lat: row.lat,
+                lon: row.lon
+            };
         }
         
         return {
@@ -308,27 +312,30 @@ export default {
             if ( !this.$refs["form"].validate() ){
                 return false;
             }
+            
             const opts = {
                     type: "core-update",
                     query: _VIEW_URI,
                     params: [
-                                {id: 'at',              type: 'datetime', value: moment(this.row.at).add(utcOff,'minutes').toDate()},
-                                {id: 'city',            type: 'id', value: row.city},
-                                {id: 'stateid',         type: 'id', value: row.stateid},
-                                {id: 'vehiclekindname', type: 'string', value: row.vehiclekindname},
-                                {id: 'vehicleregnum',   type: 'string', value: row.vehicleregnum},
-                                {id: 'offensereason',   type: 'string', value: row.offensereason},
-                                {id: 'offensereason',   type: 'string', value: row.offenseaddress},
+                                {id: 'at',              type: 'datetime', value: $moment(this.row.at).add(utcOff,'minutes').toDate()},
+                                {id: 'city',            type: 'string', value: this.row.city},
+                                {id: 'stateid',         type: 'id', value: this.row.stateid},
+                                {id: 'vehiclekindname', type: 'string', value: this.row.vehiclekindname},
+                                {id: 'vehicleregnum',   type: 'string', value: this.row.vehicleregnum},
+                                {id: 'offensereason',   type: 'string', value: this.row.offensereason},
+                                {id: 'offenseaddress',  type: 'string', value: this.row.offenseaddress},
+                                {id: 'lat',             type: 'string', value: this.row.coords.lat},
+                                {id: 'lon',             type: 'string', value: this.row.coords.lon}
                     ]
             }   //opts
             if (!!this.row.arrivaltime){
-                opts.params.push({id: 'arrivaltime', type: 'datetime',value: moment(this.row.arrivaltime).add(utcOff,'minutes').toDate()});
+                opts.params.push({id: 'arrivaltime', type: 'string', value: this.row.arrivaltime});
             }
             if (!!this.row.vehicleevacid){
-                opts.params.push({id: 'vehicleevacid', type: 'id', value: row.vehicleevacid});
+                opts.params.push({id: 'vehicleevacid', type: 'id', value: this.row.vehicleevacid});
             }
             if (!!this.row.parkingid){
-                opts.params.push({id: 'parkingid', type: 'id', value: row.parkingid});
+                opts.params.push({id: 'parkingid', type: 'id', value: this.row.parkingid});
             }
             
             if (this.row.id === NULL_ID){
