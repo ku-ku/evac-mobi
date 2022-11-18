@@ -39,14 +39,11 @@ export default async function( ctx ){
             }
         },
         beforeCreate(){
-/*TODO:            
             const worker = new Worker('/worker.js');
             worker.addEventListener('message', e => {
                 console.log(e.data)  
             });
             worker.postMessage({type:'init', env: app.context.env});
-* 
-*/
         },
         
         mounted(){

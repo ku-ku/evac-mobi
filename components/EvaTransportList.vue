@@ -122,49 +122,55 @@
                             </v-col>
                         </v-row>
                     </v-subheader>
-                    <v-list-item v-for="t in transport"
-                                 :key="t.id"
-                                 :to="{ name: 'arrest-id', params: {id: t.id} }">
-                        <v-row>
-                            <v-col class="dt" v-html="get('dt', t.createdt)"></v-col>
-                            <v-col col="auto" class="vehicle">
-                                <div class="gov">
-                                    {{ t.vehicleregnum }}
-                                    &nbsp;<span class="kind">{{ t.vehiclekindname }}</span>
-                                </div>
-                                <div class="meta">
-                                    <div class="addr"><v-icon x-small>mdi-map-marker-outline</v-icon>{{ t.offenseaddress }}</div>
-                                    <div class="parking"><v-icon x-small>mdi-map-marker-radius</v-icon>стоянка:&nbsp;{{ t.evacoffensejournalParkingidName }}</div>
-                                    <div class="wait d-block d-sm-none ml-auto">
-                                        <v-icon x-small>mdi-clock-outline</v-icon>
-                                        {{t.arrivaltime.replace(/\D+/, ':') }}
+                    <v-list-item-group v-model="selitem">
+                        <v-list-item v-for="t in transport"
+                                     selectable
+                                     :key="t.id"
+                                     :value="t.id"
+                                     :input-value="t.id"
+                                     :to="{ name: 'arrest-id', params: {id: t.id} }"
+                                     v-on:click="selitem=t.id">
+                            <v-row>
+                                <v-col class="dt" v-html="get('dt', t.createdt)"></v-col>
+                                <v-col col="auto" class="vehicle">
+                                    <div class="gov">
+                                        {{ t.vehicleregnum }}
+                                        &nbsp;<span class="kind">{{ t.vehiclekindname }}</span>
                                     </div>
-                                </div>
-                                <div class="meta">
-                                    <div class="status">
-                                        <v-icon x-small>mdi-flag-variant</v-icon>
-                                        {{ t.evacoffensejournalStateidName }}
+                                    <div class="meta">
+                                        <div class="addr"><v-icon x-small>mdi-map-marker-outline</v-icon>{{ t.offenseaddress }}</div>
+                                        <div class="parking"><v-icon x-small>mdi-map-marker-radius</v-icon>стоянка:&nbsp;{{ t.evacoffensejournalParkingidName }}</div>
+                                        <div class="wait d-block d-sm-none ml-auto">
+                                            <v-icon x-small>mdi-clock-outline</v-icon>
+                                            {{t.arrivaltime.replace(/\D+/, ':') }}
+                                        </div>
                                     </div>
-                                    <div class="phone ml-sm-auto"
-                                         v-if="!empty(t.evacoffensejournalParkingidPhone)">
-                                        <v-tooltip bottom>
-                                            <template v-slot:activator="{ on }">
-                                                <v-icon x-small>mdi-phone</v-icon>
-                                                <a :href="'tel://'+t.evacoffensejournalParkingidPhone"
-                                                   v-on="on">
-                                                    {{t.evacoffensejournalParkingidPhone}}
-                                                </a>
-                                            </template>
-                                            <span>позвонить на стоянку</span>
-                                        </v-tooltip>    
+                                    <div class="meta">
+                                        <div class="status">
+                                            <v-icon x-small>mdi-flag-variant</v-icon>
+                                            {{ t.evacoffensejournalStateidName }}
+                                        </div>
+                                        <div class="phone ml-sm-auto"
+                                             v-if="!empty(t.evacoffensejournalParkingidPhone)">
+                                            <v-tooltip bottom>
+                                                <template v-slot:activator="{ on }">
+                                                    <v-icon x-small>mdi-phone</v-icon>
+                                                    <a :href="'tel://'+t.evacoffensejournalParkingidPhone"
+                                                       v-on="on">
+                                                        {{t.evacoffensejournalParkingidPhone}}
+                                                    </a>
+                                                </template>
+                                                <span>позвонить на стоянку</span>
+                                            </v-tooltip>    
+                                        </div>
                                     </div>
-                                </div>
-                            </v-col>
-                            <v-col class="d-none d-sm-block text-right wait">
-                                {{ t.arrivaltime.replace(/\D+/, ':') }}
-                            </v-col>
-                        </v-row>
-                    </v-list-item>
+                                </v-col>
+                                <v-col class="d-none d-sm-block text-right wait">
+                                    {{ t.arrivaltime.replace(/\D+/, ':') }}
+                                </v-col>
+                            </v-row>
+                        </v-list-item>
+                    </v-list-item-group>    
                 </template>
             </v-list>
         </v-card-text>
@@ -195,7 +201,8 @@ export default {
             s: null,
             all: null,
             error: null,
-            page: 1
+            page: 1,
+            selitem: null
         };
     },
     async fetch(){
@@ -205,7 +212,6 @@ export default {
             const dt = $moment();
             this.at = `${ dt.format("HH:mm") }<small>${ dt.format("DD.MM.YYYY") }</small>`;
             this.page = 1;
-            console.log('VC fetched', this.all);
         } catch(e){
             this.error = e;
             $nuxt.msg({text:"Ошибка получения списка эвакуированных транспортных средств", timeout:20000, color:"warning"});
@@ -260,7 +266,10 @@ export default {
         },
         onpage(){
             this.$nextTick( ()=> $nuxt.$vuetify.goTo(0) );
-        }
+        },
+        highlight(id){
+            this.selitem = id;
+        }   //highlight
     }
 }
 </script>

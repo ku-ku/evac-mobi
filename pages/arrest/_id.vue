@@ -357,7 +357,7 @@ export default {
                 
                 const id = (this.row.id === NULL_ID) ? res.result[_VIEW_ID] : this.row.id;
                 setTimeout(()=>{
-                    this.$router.replace({name: "index"});
+                    this.$router.replace({name: "index", params:{ id }});
                 }, 666);
             } catch(e){
                 this.mode = MODES.error;

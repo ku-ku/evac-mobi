@@ -21,7 +21,7 @@
             </v-tooltip>
             <v-row>
                 <v-col cols="12">
-                  <eva-transport-list />
+                  <eva-transport-list ref="transportList" />
                 </v-col>
             </v-row>
       </v-col>
@@ -30,12 +30,23 @@
 
 <script>
 import EvaTransportList from "~/components/EvaTransportList";
+import { isEmpty } from "~/utils";
 
 export default {
     middleware: 'auth',
     name: 'IndexPage',
     components: {
         EvaTransportList
+    },
+    async asyncData({params}){
+        return {
+            id: params?.id
+        };
+    },
+    mounted(){
+        if ( !isEmpty(this.id) ){
+            this.$refs["transportList"].highlight(this.id);
+        }
     }
 }
 </script>
