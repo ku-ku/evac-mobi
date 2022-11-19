@@ -72,6 +72,7 @@
                                         v-model="row.vehiclekindname"
                                         item-text="vehiclekindname"
                                         item-value="vehiclekindname"
+                                        :return-object="false"
                                         hide-details
                                         eager
                                         :rules="[ rules.empty ]" 
@@ -92,6 +93,7 @@
                         <v-autocomplete label="Эвакуатор"
                                     item-text="govnum"
                                     item-value="id"
+                                    :return-object="false"
                                     hide-details
                                     eager
                                     :items="evacs"
@@ -111,6 +113,7 @@
                                     item-text="name"
                                     item-value="id"
                                     hide-details
+                                    :return-object="false"
                                     eager
                                     :items="parkings"
                                     v-on:input="onparking"
@@ -125,6 +128,7 @@
                                     item-text="offensereason"
                                     item-value="offensereason"
                                     eager
+                                    :return-object="false"
                                     :items="causes"
                                     :rules="[ rules.empty ]" 
                                     hide-details>

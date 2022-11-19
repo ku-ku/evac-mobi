@@ -43,7 +43,15 @@ export default {
             id: params?.id
         };
     },
-    mounted(){
+    created(){
+        Notification.requestPermission(res => {
+            if (res === 'granted') {
+            } else {
+                $nuxt.msg({text:"Необходимо разрешить уведомления", color: "warning"});
+            }
+        });
+    },
+    activated(){
         if ( !isEmpty(this.id) ){
             this.$refs["transportList"].highlight(this.id);
         }

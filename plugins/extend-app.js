@@ -45,7 +45,6 @@ export default async function( ctx ){
             });
             worker.postMessage({type:'init', env: app.context.env});
         },
-        
         mounted(){
             (async ()=>{
                 try {
@@ -138,7 +137,6 @@ export default async function( ctx ){
         },       //methods
         watch: {
             "subject.id"(val){
-                console.log("subject changed", val);
                 if ( !isEmpty(val) ){
                     this.bepooling();
                 }

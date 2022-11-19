@@ -16,7 +16,7 @@
     </v-app-bar>
     <v-main>
       <v-container>
-        <Nuxt :keep-alive-props="{ exclude: ['auth'] }" />
+        <Nuxt keep-alive :keep-alive-props="{ exclude: ['SignInPage', 'EvaTransportList', 'EvArrest'] }" />
       </v-container>
     </v-main>
     <v-footer app>

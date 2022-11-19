@@ -124,12 +124,10 @@
                     </v-subheader>
                     <v-list-item-group v-model="selitem">
                         <v-list-item v-for="t in transport"
-                                     selectable
                                      :key="t.id"
                                      :value="t.id"
                                      :input-value="t.id"
-                                     :to="{ name: 'arrest-id', params: {id: t.id} }"
-                                     v-on:click="selitem=t.id">
+                                     v-on:click="edit(t)">
                             <v-row>
                                 <v-col class="dt" v-html="get('dt', t.createdt)"></v-col>
                                 <v-col col="auto" class="vehicle">
@@ -208,7 +206,7 @@ export default {
     async fetch(){
         this.error = null;
         try {
-            this.all = await this.$store.dispatch("data/transport");
+            this.all = [ ...await this.$store.dispatch("data/transport") ];
             const dt = $moment();
             this.at = `${ dt.format("HH:mm") }<small>${ dt.format("DD.MM.YYYY") }</small>`;
             this.page = 1;
@@ -219,7 +217,6 @@ export default {
         }
     },
     computed: {
-        
         /**
          * Filtering list by "s"
          * @returns {Array}
@@ -267,8 +264,31 @@ export default {
         onpage(){
             this.$nextTick( ()=> $nuxt.$vuetify.goTo(0) );
         },
-        highlight(id){
-            this.selitem = id;
+        edit(t){
+            this.selitem = t.id;
+            this.$router.push({ name: 'arrest-id', params: {id: t.id} });
+        },
+        async highlight(id){
+            try {
+                const _t = await this.$store.dispatch("data/transport", id);
+                if (_t.length > 0){
+                    const t = _t[0];
+                    const n = this.all.findIndex( a => a.id === t.id );
+                    if ( n < 0 ){
+                        this.all.unshift(t);
+                    } else {
+                        this.all.splice(n, 1, t);
+                    }
+                    console.log('changed', n, t);
+                    this.selitem = t.id;
+                    this.$forceUpdate();
+                } else {
+                    console.log(`No #${ id } data loaded `);
+                }
+            } catch(e){
+                console.log(e);
+                $nuxt.msg({text:'Ошибка обновления списка ТС', color: 'warning'});
+            }
         }   //highlight
     }
 }
@@ -387,6 +407,18 @@ export default {
                     border-bottom: 1px solid #ccc;
                 }
             }   /* .v-subheader */
+            & .v-list-item--active{
+                background-color: var(--v-primary-base);
+                color: #fff;
+                & a {
+                    color: #fff;
+                }
+                & .vehicle{
+                    & .gov, & .kind{
+                        color: #fff;
+                    }
+                }
+            }
         }       /* __list */
     }
     .page-content ul li {
