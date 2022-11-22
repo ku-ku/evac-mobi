@@ -39,11 +39,14 @@ export default async function( ctx ){
             }
         },
         beforeCreate(){
+/*            
             const worker = new Worker('/worker.js');
             worker.addEventListener('message', e => {
                 console.log(e.data)  
             });
             worker.postMessage({type:'init', env: app.context.env});
+* 
+*/
         },
         mounted(){
             (async ()=>{
@@ -89,7 +92,7 @@ export default async function( ctx ){
                 };
                 
                 //TODO: avg for test's
-                //ws-pool
+                //ws-poolling
                 ( async ()=>{
                     if (!_ws){
                         _ws = await this.ws();
@@ -109,7 +112,7 @@ export default async function( ctx ){
                     _ws.publish(SUB_KEY, codec.encode({dt: (new Date()).getTime()}));
                 })();
                     
-                //rpc-pool
+                //rpc-poolling
                 ( async ()=>{
                     var tm = (new Date()).getTime();
                     $.ajax({

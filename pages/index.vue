@@ -31,6 +31,9 @@
 <script>
 import EvaTransportList from "~/components/EvaTransportList";
 import { isEmpty } from "~/utils";
+import { codec } from "~/utils/http";
+
+var ws = null, sid = null;
 
 export default {
     middleware: 'auth',
@@ -38,22 +41,42 @@ export default {
     components: {
         EvaTransportList
     },
-    async asyncData({params}){
-        return {
-            id: params?.id
-        };
-    },
     created(){
+        const self = this;
         Notification.requestPermission(res => {
             if (res === 'granted') {
             } else {
                 $nuxt.msg({text:"Необходимо разрешить уведомления", color: "warning"});
             }
         });
+        (async ()=>{
+            try {
+                if (!ws){
+                    ws = await $nuxt.ws();
+                    sid = ws.subscribe('PUBLIC.EVA.status');
+                    try {
+                        for await (const m of sid) {
+                            self.notify(codec.decode(m.data));
+                        }
+                    } catch(e){
+                        console.log('ERR (ws-status)', e);
+                    }
+                }
+            } catch(e){
+                console.log('ERR (ws)', e);
+            }
+        })();
     },
     activated(){
-        if ( !isEmpty(this.id) ){
-            this.$refs["transportList"].highlight(this.id);
+        const id = this.$route.params?.id;
+        if ( !isEmpty(id) ){
+            this.$refs["transportList"].highlight(id);
+        }
+    },
+    methods: {
+        notify({ id }){
+            console.log('notify', id);
+            this.$refs["transportList"].highlight2(id);
         }
     }
 }

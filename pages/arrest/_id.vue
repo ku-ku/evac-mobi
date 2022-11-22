@@ -163,6 +163,8 @@
 <script>
 import { mapState } from 'vuex';
 import { isEmpty, MODES, NULL_ID  } from "~/utils/";
+import { codec } from "~/utils/http";
+
 import geo from "~/utils/geo.js";
 const $moment = require('moment');
 $moment.locale('ru');
@@ -174,6 +176,9 @@ import { _SIN2_VIEWS_IDS } from '~/store/data.js';
 const _VIEW_ID = "8190818d-bf31-41d3-8e3c-08582b85f7e9";
 const _VIEW_URI= `sin2:/v:${ _VIEW_ID }`;
 
+
+ var _ws = null;
+ 
 export default {
     name: "EvArrest",
     middleware: 'auth',
@@ -187,13 +192,14 @@ export default {
             }
         });
         
-        let row = {
+        var row = {
             id: params.id,
             stateid: null,
             city: null,
             parkingid: null,
             arrivaltime: null
         };
+        
         if ( isEmpty(row.id) ){
             row.id = NULL_ID;
             row.at = $moment();
@@ -234,6 +240,8 @@ export default {
                     this.row.stateid = s.id;
                 }
             });
+            
+/**TODO:
             if ( 
                     (!!this.parkings)
                  && (this.parkings.length > 0)
@@ -241,7 +249,7 @@ export default {
                 this.row.parkingid = this.parkings[0].id;
                 this.onparking(this.row.parkingid);
             }
-            
+*/
             if ( 
                     (!!this.cities)
                  && (this.cities.length > 0)
@@ -260,7 +268,7 @@ export default {
             return this.mode !== MODES.default;
         },
         address(){
-            if ( isEmpty(this.row?.id) ) {
+            if ( this.has('new') ) {
                 return geo.a2s(this.$store.state.geo.addr?.address);
             } else {
                 return this.row.offenseaddress;
@@ -308,7 +316,7 @@ export default {
                 case "fine":
                     return !!this.$store.state.geo.ll.fine;
                 case 'new':
-                    return (NULL_ID === this.row.id);
+                    return (!this.row?.id)||(NULL_ID === this.row.id);
             }
             return false;
         },
@@ -321,17 +329,18 @@ export default {
                     type: "core-update",
                     query: _VIEW_URI,
                     params: [
-                                {id: 'at',              type: 'datetime', value: $moment(this.row.at).add(utcOff,'minutes').toDate()},
+                                {id: 'createdt',        type: 'datetime', value: $moment(this.row.at).add(utcOff,'minutes').toDate()},
                                 {id: 'city',            type: 'string', value: this.row.city},
                                 {id: 'stateid',         type: 'id', value: this.row.stateid},
                                 {id: 'vehiclekindname', type: 'string', value: this.row.vehiclekindname},
                                 {id: 'vehicleregnum',   type: 'string', value: this.row.vehicleregnum},
                                 {id: 'offensereason',   type: 'string', value: this.row.offensereason},
-                                {id: 'offenseaddress',  type: 'string', value: this.row.offenseaddress},
+                                {id: 'offenseaddress',  type: 'string', value: this.address},
                                 {id: 'lat',             type: 'string', value: this.row.coords.lat},
                                 {id: 'lon',             type: 'string', value: this.row.coords.lon}
                     ]
             }   //opts
+            
             if (!!this.row.arrivaltime){
                 opts.params.push({id: 'arrivaltime', type: 'string', value: this.row.arrivaltime});
             }
@@ -350,9 +359,10 @@ export default {
 
             this.mode = MODES.saving;
             
+            console.log('SAVE', opts);
+            
             try {
                 const res = await $nuxt.api(opts);
-                console.log(res);
                 if (res.result){
                     this.mode = MODES.success;
                 } else {
@@ -360,6 +370,12 @@ export default {
                 }
                 
                 const id = (this.row.id === NULL_ID) ? res.result[_VIEW_ID] : this.row.id;
+                
+                if (!_ws){
+                    _ws = await $nuxt.ws();
+                }
+                _ws.publish('PUBLIC.EVA.arrest', codec.encode({ id }));
+                
                 setTimeout(()=>{
                     this.$router.replace({name: "index", params:{ id }});
                 }, 666);

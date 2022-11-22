@@ -127,6 +127,7 @@
                                      :key="t.id"
                                      :value="t.id"
                                      :input-value="t.id"
+                                     v-bind:class="{modified: !!t.modified}"
                                      v-on:click="edit(t)">
                             <v-row>
                                 <v-col class="dt" v-html="get('dt', t.createdt)"></v-col>
@@ -140,7 +141,7 @@
                                         <div class="parking"><v-icon x-small>mdi-map-marker-radius</v-icon>стоянка:&nbsp;{{ t.evacoffensejournalParkingidName }}</div>
                                         <div class="wait d-block d-sm-none ml-auto">
                                             <v-icon x-small>mdi-clock-outline</v-icon>
-                                            {{t.arrivaltime.replace(/\D+/, ':') }}
+                                            {{ empty(t.arrivaltime) ? '-' : t.arrivaltime.replace(/\D+/, ':') }}
                                         </div>
                                     </div>
                                     <div class="meta">
@@ -148,6 +149,10 @@
                                             <v-icon x-small>mdi-flag-variant</v-icon>
                                             {{ t.evacoffensejournalStateidName }}
                                         </div>
+                                        <div class="truck" v-if="!empty(t.evacoffensejournalVehicleevacidGovnum)">
+                                            <v-icon x-small>mdi-tow-truck</v-icon>
+                                            {{ t.evacoffensejournalVehicleevacidGovnum }}
+                                        </div>    
                                         <div class="phone ml-sm-auto"
                                              v-if="!empty(t.evacoffensejournalParkingidPhone)">
                                             <v-tooltip bottom>
@@ -164,7 +169,7 @@
                                     </div>
                                 </v-col>
                                 <v-col class="d-none d-sm-block text-right wait">
-                                    {{ t.arrivaltime.replace(/\D+/, ':') }}
+                                    {{ empty(t.arrivaltime) ? '-' : t.arrivaltime.replace(/\D+/, ':') }}
                                 </v-col>
                             </v-row>
                         </v-list-item>
@@ -210,6 +215,7 @@ export default {
             const dt = $moment();
             this.at = `${ dt.format("HH:mm") }<small>${ dt.format("DD.MM.YYYY") }</small>`;
             this.page = 1;
+            console.log('transport', this.all);
         } catch(e){
             this.error = e;
             $nuxt.msg({text:"Ошибка получения списка эвакуированных транспортных средств", timeout:20000, color:"warning"});
@@ -268,19 +274,29 @@ export default {
             this.selitem = t.id;
             this.$router.push({ name: 'arrest-id', params: {id: t.id} });
         },
-        async highlight(id){
+        async highlight(id, nosel = false, q = 0){
+            if (this.$fetchState.pending){
+                if ( q > 30){
+                    return;
+                }
+                setTimeout(()=>{this.highlight(id, nosel, q++);}, 300);
+                return;
+            }
+            
             try {
                 const _t = await this.$store.dispatch("data/transport", id);
                 if (_t.length > 0){
                     const t = _t[0];
+                    t.modified = nosel;
                     const n = this.all.findIndex( a => a.id === t.id );
                     if ( n < 0 ){
                         this.all.unshift(t);
                     } else {
                         this.all.splice(n, 1, t);
                     }
-                    console.log('changed', n, t);
-                    this.selitem = t.id;
+                    if (!nosel){
+                        this.selitem = t.id;
+                    }
                     this.$forceUpdate();
                 } else {
                     console.log(`No #${ id } data loaded `);
@@ -289,7 +305,18 @@ export default {
                 console.log(e);
                 $nuxt.msg({text:'Ошибка обновления списка ТС', color: 'warning'});
             }
-        }   //highlight
+        },   //highlight
+        /**
+         * Highlighting from MQ
+         */
+        highlight2(id){
+            console.log(`#${ id } MQ-highlighting`);
+            const n = this.all.findIndex( a => a.id === id );
+            if ( n < 0 ){
+                return;
+            }
+            this.highlight(id, true);
+        }
     }
 }
 </script>
@@ -320,6 +347,13 @@ export default {
                 & .row{
                     flex-wrap: nowrap;
                     align-items: center;
+                }
+                &.modified{
+                    background-color: #FFECB3;
+                    & .status, & .truck {
+                        font-weight: 500;
+                        color:#d50000;
+                    }
                 }
             }
             & .dt{
@@ -407,7 +441,7 @@ export default {
                     border-bottom: 1px solid #ccc;
                 }
             }   /* .v-subheader */
-            & .v-list-item--active{
+            & .v-list-item--active:not(.modified){
                 background-color: var(--v-primary-base);
                 color: #fff;
                 & a {

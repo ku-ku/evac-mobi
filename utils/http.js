@@ -98,10 +98,11 @@ const http = options => {
                     jsonrpc: '2.0'
                 };
             break;
+        case 'core-create':
         case 'core-update':
             params.url = env.rpcUrl + '?d=jsonRpc';
             params.data = {
-                    method: 'ru.kih.sin.api2.Core.update',
+                    method: 'ru.kih.sin.api2.Core.create',
                     params: [{
                         query: options.query,
                         context: options.context || defaultContext,
@@ -111,6 +112,9 @@ const http = options => {
                     }],
                     jsonrpc: '2.0'
                 };
+            if ('core-update' === options.type){
+                params.data.method = 'ru.kih.sin.api2.Core.update';
+            }
             break;
         case 'logout':
             params.url = env.rpcUrl + '?d=jsonRpc';
