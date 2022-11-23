@@ -1,10 +1,18 @@
 <template>
   <v-app dark>
-    <v-navigation-drawer
-      v-model="nav"
-      temporary
-      fixed
-      app>
+    <v-navigation-drawer v-model="nav"
+                         v-if="has('subject')"
+                         temporary
+                         fixed
+                         app
+                         >
+        <v-list dense
+                nav>
+            <v-list-item>
+                <v-list-item-icon><v-icon>mdi-qrcode</v-icon></v-list-item-icon>
+                <v-list-item-title>QR для авторизации</v-list-item-title>
+            </v-list-item>
+        </v-list>
     </v-navigation-drawer>
     <v-app-bar
       fixed
@@ -67,6 +75,8 @@ export default {
                     return !isEmpty(this.addr);
                 case "fine":
                     return !!this.$store.state.geo.ll.fine;
+                case "subject":
+                    return !isEmpty(this.user?.id);
             }
             return false;
         },

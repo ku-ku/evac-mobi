@@ -111,7 +111,7 @@ export default {
     computed: {
         title(){
             if ( this.has('user') ){
-                return `${ this.user.title }<div class="org-title">${ this.user.tenant }</div>`;
+                return `${ this.user.title||''}<div class="org-title">${ this.user.tenant }</div>`;
             }
             return this.$store.getters["branding/get"]("brand.web.system.name");
         },
