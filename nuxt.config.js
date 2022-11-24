@@ -67,7 +67,7 @@ export default {
               target: `${ HOST_NAME }/channel/api/publicApi`,
               pathRewrite: {'^/api/publicApi': ''}
           },
-          "/api": `${ HOST_NAME }`,
+          "/api": 'http://192.168.61.245:8880',
           "/rpc": `${ HOST_NAME }`
   },
   

@@ -76,10 +76,12 @@ export default {
   components: {
       EvaLinkStatus
   },
-    async asyncData({store}){
+    async asyncData({ store, query }){
+        
         var preauth = false;
+        
         try {
-            preauth = await store.dispatch("profile/preauth");
+            preauth = await store.dispatch("profile/preauth", query.mark);
         } catch(e) {
             console.log('ERR (preauth)', e);
         }

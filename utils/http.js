@@ -87,6 +87,16 @@ const http = options => {
                 jsonrpc: '2.0'
             };
             break;
+        case 'pre-auth':
+            delete params.dataType;
+            delete params.contentType;
+            options.auth = false; //reset (don`t sending)
+            params.url = env.rpcUrl + '?d=token';
+            params.processData = false;
+            params.headers = {
+                "X-Mark-IV": options.mark
+            };
+            break;
         case 'core-read':
             params.url = env.rpcUrl + '?d=jsonRpc';
             params.data = {

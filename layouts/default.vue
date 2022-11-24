@@ -8,7 +8,8 @@
                          >
         <v-list dense
                 nav>
-            <v-list-item>
+            <v-list-item
+                :to="{name: 'qr'}">
                 <v-list-item-icon><v-icon>mdi-qrcode</v-icon></v-list-item-icon>
                 <v-list-item-title>QR для авторизации</v-list-item-title>
             </v-list-item>

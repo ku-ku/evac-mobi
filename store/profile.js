@@ -1,3 +1,5 @@
+import { isEmpty } from "~/utils/";
+
 const _LS_TOKEN_KEY = "_sin2_at";
 
 export const state = () => ({
@@ -14,16 +16,36 @@ export const mutations = {
 
 export const actions = {
     /**
-     * @param(ping): type Boolean
+     * @param(payload): type String - hash for getting token
      */
-    async preauth({ state, commit }){
+    async preauth({ state, commit }, payload){
         return new Promise(async (resolve, reject) => {
-            var at = state.subject?.tokens["access"];
-            if (!at){
-                at = window.localStorage.getItem(_LS_TOKEN_KEY);
+            
+            var at = null;
+            
+            
+            if ( !isEmpty(payload) ){
+                try {
+                    document.cookie = 'JSESSIONID=;  Path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;';
+                    at = {
+                        token: await $nuxt.api({
+                                                    type: 'pre-auth',
+                                                    mark: payload
+                                               })
+                    };
+                    console.log('at by mark', at);
+                } catch(e){
+                    reject(e);
+                    return;
+                }
+            } else {
+                at = state.subject?.tokens["access"];
+                if (!at){
+                    at = window.localStorage.getItem(_LS_TOKEN_KEY);
+                }
             }
             
-            if (!at){
+            if ( !at ){
                 reject({message: 'No access'});
             } else {
                 try {
@@ -37,11 +59,19 @@ export const actions = {
                         type: 'auth',
                         auth: `Bearer ${at.token}`
                     };
+                    
                     const r = await $nuxt.api(options);
                     
                     if (!!r.result) {
-                        commit('set', {subject: r.result});
-                        resolve(r.result);
+                        const subject = r.result;
+                        
+                        if (!subject.tokens){
+                            subject.tokens = {};
+                        }
+                        subject.tokens["access"] = at;
+                        
+                        commit('set', { subject });
+                        resolve(subject);
                     } else {
                         throw r.error;
                     }
