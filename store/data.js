@@ -10,6 +10,8 @@ export const _SIN2_VIEWS_IDS = {
     cities:   'sin2:/v:ce31059a-9f3d-4e36-a72d-d79bc1332bf9/'
 };
 
+const ACESS_RE = /(access)+.{1,}(denied)+/gi;
+
 const _sin2objNq = ( sin2res ) => {
     const {fields, data} = sin2res;
     if (
@@ -104,7 +106,10 @@ export const actions = {
                     commit("set", o);
                     resolve();
                 } catch(e) {
-                    console.log('ERR (data/read)', e);
+                    e.acces = ACESS_RE.test(e.data || e.message);
+                    if (e.acces){
+                        setTimeout(()=>{$nuxt.msg({text: 'Требуется повторная авторизация', color: 'error', timeout: -1});}, 1500);
+                    }
                     reject(e);
                 }
             }
@@ -132,6 +137,10 @@ export const actions = {
                 resolve(o);
             } catch(e) {
                 console.log('ERR (data/read)', e);
+                e.acces = ACESS_RE.test(e.data || e.message);
+                if (e.acces){
+                    setTimeout(()=>{$nuxt.msg({text: 'Требуется повторная авторизация', color: 'error', timeout: -1});}, 1500);
+                }
                 reject(e);
             }
         });

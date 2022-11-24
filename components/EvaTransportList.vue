@@ -63,7 +63,13 @@
                                  outlined>
                             Что-то пошло не так - мы не смогли получить список задержанных транспортных средств.<br />
                             Попробуйте обновить страницу через несколько минут.<br />
-                            <small>детали ошибки для технической службы: {{ error.message }}</small>
+                            <small>детали ошибки для технической службы: {{ error.data || error.message }}</small>
+                            <div v-if="!!e.access" class="my-5 text-center">
+                                <v-btn tile
+                                       v-on="goauth">
+                                    <v-icon>mdi-login</v-icon>&nbsp;авторизоваться
+                                </v-btn>
+                            </div>
                         </v-alert>
                     </v-list-item>
                 </template>    
@@ -316,6 +322,10 @@ export default {
                 return;
             }
             this.highlight(id, true);
+        },
+        goauth(){
+            this.$store.commit("profile/set", {subject: null});
+            this.$router.replace({name: "auth"});
         }
     }
 }
