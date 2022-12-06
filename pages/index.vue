@@ -1,16 +1,14 @@
 <template>
   <v-row class="mt-5">
-      <v-col cols="12" align="center">
-            <v-btn large 
-                   tile
+      <v-col cols="12" align="center" justify="center">
+            <v-btn tile
                    color="primary"
                    :to="{name:'arrest-id', params:{id:null}}">
                 ОФОРМИТЬ ЗАДЕРЖАНИЕ&nbsp;<v-icon>mdi-car-side</v-icon>
             </v-btn>
             <v-tooltip bottom>
                 <template v-slot:activator="{ on }">
-                    <v-btn large 
-                           tile
+                    <v-btn tile
                            color="primary"
                            v-on="on"
                            v-on:click="$nuxt.refresh()">
@@ -76,7 +74,7 @@ export default {
     methods: {
         notify({ id }){
             console.log('notify', id);
-            this.$refs["transportList"].highlight2(id);
+            this.$refs["transportList"]?.highlight2(id);
         }
     }
 }

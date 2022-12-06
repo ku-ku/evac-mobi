@@ -13,6 +13,8 @@
                            tile
                            class="address"
                            v-on:click="get('addr')">
+                        <v-icon v-if="has('new')">mdi-plus</v-icon>
+                        <v-icon v-else>mdi-application-edit-outline</v-icon>
                         <div>
                             {{ address }}
                             <div class="coords">
@@ -25,13 +27,16 @@
             </v-toolbar>
             <v-card-text>
                 <v-row align="center">
-                    <v-col cols="12" sm="6" class="title">
-                        <template v-if="has('new')"> 
-                            <v-icon>mdi-plus</v-icon>&nbsp;Новая заявка
-                        </template>
-                        <template v-else>
-                            <v-icon>mdi-application-edit-outline</v-icon>&nbsp;Редактирование
-                        </template>
+                    <v-col cols="12" sm="6">
+                        <v-autocomplete label="Район/МО"
+                                    item-text="city"
+                                    item-value="id"
+                                    hide-details
+                                    :return-object="false"
+                                    :items="cities"
+                                    :rules="[ rules.empty ]" 
+                                    v-model="row.cityid">
+                        </v-autocomplete>
                     </v-col>
                     <v-col cols="12" sm="6">
                         <v-combobox label="Причина задержания"
@@ -44,19 +49,6 @@
                                     :rules="[ rules.empty ]" 
                                     hide-details>
                         </v-combobox>
-                    </v-col>
-                </v-row>
-                <v-row>
-                    <v-col cols="12">
-                        <v-autocomplete label="Район/МО"
-                                    item-text="city"
-                                    item-value="id"
-                                    hide-details
-                                    :return-object="false"
-                                    :items="cities"
-                                    :rules="[ rules.empty ]" 
-                                    v-model="row.cityid">
-                        </v-autocomplete>
                     </v-col>
                 </v-row>
                 <v-row>
@@ -80,6 +72,9 @@
                         </v-autocomplete>
                     </v-col>
                 </v-row>
+                <v-row class="text-subtitle-1">
+                    <v-col>Информация о ТС</v-col>
+                </v-row>
                 <v-row>
                     <v-col cols="12" sm="6">
                         <v-combobox label="Марка/модель ТС"
@@ -101,6 +96,10 @@
                                       hide-details>
                         </v-text-field>
                     </v-col>
+                </v-row>
+<template v-if="!has('new')">
+                <v-row class="text-subtitle-1">
+                    <v-col >Информация о перемещении</v-col>
                 </v-row>
                 <v-row>
                     <v-col cols="12" sm="6">
@@ -140,13 +139,14 @@
                     </v-col>
                     <v-col cols="12" sm="6">
                         <v-text-field ref="arrival"
-                                      label="Расч.время прибытия"
+                                      label="Расч.время прибытия на стоянку"
                                       v-model="row.arrivaltime"
                                       readonly
                                       hide-details>
                         </v-text-field>
                     </v-col>
                 </v-row>
+</template>
             </v-card-text>
             <v-card-actions class="py-5">
                 <v-btn color="grey"
@@ -209,6 +209,7 @@ export default {
             row.id = NULL_ID;
             row.at = $moment();
             row.coords = await store.dispatch("geo/current");
+            row.cityid = store.getters["profile/region"]?.cityid;
         } else {
             const res = await store.dispatch("data/transport", params.id);
             row = {...res[0]};
@@ -255,8 +256,8 @@ export default {
                 this.onparking(this.row.parkingid);
             }
 */
-            if ( 
-                    (!!this.cities)
+            if (    (!this.row.cityid)
+                 && (!!this.cities)
                  && (this.cities.length > 0)
                ){
                const city = this.$store.getters['geo/city'];
@@ -455,6 +456,18 @@ export default {
                 & .v-list-item{
                     display: block;
                 }
+            }
+        }
+        
+        & .row {
+            & > *{
+                padding-top: 0;
+            }
+            &.text-subtitle-1 {
+                & .col{
+                    padding-top: 12px;
+                    padding-bottom: 0;
+                }        
             }
         }
     }

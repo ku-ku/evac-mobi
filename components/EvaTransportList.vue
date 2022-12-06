@@ -3,58 +3,7 @@
         flat
         tile
         class="eva-transport">
-        <v-card-text v-if="has('one')" 
-                     class="eva-one elevation-3">
-            <template v-for="t in transport">
-                <h3>информация о задержании<small>транспортного средства</small></h3>
-                <v-row class="flex-nowrap mt-3 mb-5">
-                    <v-col cols="3" col-sm="2"
-                           class="eva-one__dt"
-                           v-html="get('dt2', t.createdt)">
-                    </v-col>
-                    <v-col class="eva-one__vehicle text-center">
-                        {{ t.vehicleregnum }}
-                        <small class="kind">{{ t.vehiclekindname }}</small>
-                    </v-col>
-                    <v-col cols="3"  col-sm="2"
-                           class="eva-one__wait">
-                         {{t.arrivaltime.replace(/\D+/, ':') }}<br />
-                         <small>время прибытия на парковку</small>
-                    </v-col>
-                </v-row>
-                <v-row>
-                    <v-col cols="12" class="addr">
-                        <v-icon small>mdi-map-marker-outline</v-icon>{{ t.offenseaddress }}
-                        <small>адрес задержания</small>
-                    </v-col>
-                </v-row>
-                <v-row>
-                    <v-col cols="12" class="addr">
-                        <v-icon small>mdi-map-marker-radius</v-icon>{{ t.evacoffensejournalParkingidName }}
-                        <small>адрес стоянки</small>
-                        <v-row class="justify-space-around mt-5 mb-5">
-                            <v-col cols="12" col-sm="6" class="text-center"
-                                   v-if="!empty(t.evacoffensejournalParkingidPhone)">
-                                <a :href="'tel://'+t.evacoffensejournalParkingidPhone"
-                                   class="v-btn v-btn--is-elevated v-btn--has-bg v-btn--tile theme--light v-size--default primary">
-                                    <v-icon small>mdi-phone</v-icon>{{t.evacoffensejournalParkingidPhone}}
-                                </a>
-                                <small>звонок на стоянку</small>
-                            </v-col>    
-                            <v-col cols="12" col-sm="6" class="text-center">
-                                <v-btn v-on:click="gomap(t)"
-                                       tile
-                                       color="primary">
-                                    <v-icon small>mdi-map</v-icon>открыть карту
-                                </v-btn>
-                                <small>посмотреть местонахождение</small>
-                            </v-col>
-                        </v-row>    
-                    </v-col>
-                </v-row>
-            </template>    
-        </v-card-text>
-        <v-card-text v-else>
+        <v-card-text>
             <v-list class="eva-transport__list"
                     v-bind:class="{'eva-error': has('error')}">
                 <template v-if="has('error')">
@@ -64,7 +13,7 @@
                             Что-то пошло не так - мы не смогли получить список задержанных транспортных средств.<br />
                             Попробуйте обновить страницу через несколько минут.<br />
                             <small>детали ошибки для технической службы: {{ error.data || error.message }}</small>
-                            <div v-if="!!e.access" class="my-5 text-center">
+                            <div v-if="(!!e.access)" class="my-5 text-center">
                                 <v-btn tile
                                        v-on="goauth">
                                     <v-icon>mdi-login</v-icon>&nbsp;авторизоваться

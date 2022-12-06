@@ -1,6 +1,6 @@
 <template>
     <v-row class="ev-profile fill-height" justify="center" align="center">
-        <v-col cols="11" sm="8">
+        <v-col cols="11" sm="6">
             <v-form v-on:submit.stop.prevent="onauth" 
                     action="#" 
                     ref="form"
@@ -31,7 +31,7 @@
                             <v-icon slot="prepend" small>mdi-asterisk</v-icon>
                         </v-text-field>
                         <v-alert color="warning" dark class="my-5" v-if="has('error')">
-                            {{ error }}
+                            <div v-html="error"></div>
                         </v-alert>
                     </v-card-text>
                     <v-card-actions>
@@ -152,7 +152,7 @@ export default {
                 }, 2000);
             } catch(e) {
                 console.log('ERR (login)', e);
-                this.error = 'Логин или пароль неверный';
+                this.error = `Логин или пароль неверный<div class="small">${ e.responseText || e.message }<br />${e.statusText||''}</div>`;
             } finally {
                 this.pending = false;
             }
@@ -161,6 +161,17 @@ export default {
     }   //methods
 };
 </script>
+<style lang="scss">
+    .v-alert {
+        & .small {
+            font-size: 0.75rem;
+            line-height: 1.115;
+            border-top: 1px solid rgba(255, 255, 255, 0.5);
+            margin-top: 0.25rem;
+            padding-top: 0.25rem;
+        }
+    }
+</style>    
 
 <style lang="scss" scoped>
     .ev-profile{

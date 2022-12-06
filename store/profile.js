@@ -1,6 +1,35 @@
 import { isEmpty } from "~/utils/";
+import { sin2obj } from "~/store/data";
 
 const _LS_TOKEN_KEY = "_sin2_at";
+
+
+/**
+ * Read additional info by user
+ */
+const _adds = async subject => {
+    return new Promise((resolve,reject)=>{
+        const opts = {
+                        type: 'core-read',
+                        query: `sin2:/v:f7dd439c-ca65-4109-94c6-301376431706/?filter=eq(field(".userId"),param("${ subject.id }","id"))`
+                    };
+        
+        $nuxt.api(opts).then( res => {
+            if ( 
+                    ( res.result )
+                 && ( res.result.data.length > 0 )
+               ) {
+               subject.region = sin2obj(res.result)[0];
+               resolve();
+            } else {
+               reject({message: 'No user adds'}); 
+            }
+        }).catch( e => {
+            reject(e);
+        });
+    });
+}; //_adds
+
 
 export const state = () => ({
     subject: null
@@ -18,11 +47,10 @@ export const actions = {
     /**
      * @param(payload): type String - hash for getting token
      */
-    async preauth({ state, commit }, payload){
+    async preauth({ state, commit, dispatch }, payload){
         return new Promise(async (resolve, reject) => {
             
             var at = null;
-            
             
             if ( !isEmpty(payload) ){
                 try {
@@ -70,6 +98,12 @@ export const actions = {
                         }
                         subject.tokens["access"] = at;
                         
+                        try {
+                            await _adds(subject);
+                        } catch(e){
+                            console.log('ERR (adds)', e);
+                        }
+                        
                         commit('set', { subject });
                         resolve(subject);
                     } else {
@@ -90,11 +124,17 @@ export const actions = {
             auth: 'Basic ' + btoa(u + ':' + p)
         };
         return new Promise((resolve, reject) => {
-            $nuxt.api(options).then( r => {
+            $nuxt.api(options).then( async r => {
                     if (!!r.result) {
                         const subject = r.result;
                         if (subject.tokens){
                             window.localStorage.setItem(_LS_TOKEN_KEY, JSON.stringify(subject.tokens["access"]));
+                        }
+                        
+                        try {
+                            await _adds(subject);
+                        } catch(e){
+                            console.log('ERR (adds)', e);
                         }
                         commit('set', { subject });
                         resolve(subject);
@@ -108,7 +148,7 @@ export const actions = {
                 });
         });
     },
-
+    
     async logout({ commit }) {
         return new Promise( resolve => {
             $nuxt.api({
@@ -132,6 +172,7 @@ export const getters = {
         }
         return null;
     },
+    region: state => state.subject?.region,
     token: state => {
         if (state.subject){
             return state.subject.tokens["access"]?.token;
