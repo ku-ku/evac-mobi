@@ -7,7 +7,7 @@ export const _SIN2_VIEWS_IDS = {
     evacs:    'sin2:/v:bdc92a44-76fd-462a-8d3b-7611f2315d8c/?filter=and(isnull(field(".endDt")),eq(field(".vcTypeID"), param("e30d37ea-7f3f-4b51-9b4d-840b702a9ec4","id")))',
     causes:   'sin2:/v:9acb3853-b211-4f0e-8342-870815aa9be8',
     vcmarks:  'sin2:/v:f0229c5d-a121-4c4a-90a8-eae854f9f272/?sort=evacVehicleKindName.vehicleKindName',
-    cities:   'sin2:/v:ce31059a-9f3d-4e36-a72d-d79bc1332bf9/'
+    cities:   'sin2:/v:72e457c0-c978-4feb-b6ec-5c7bc102242f/'   /*ce31059a-9f3d-4e36-a72d-d79bc1332bf9*/
 };
 
 const ACESS_RE = /(access)+.{1,}(denied)+/gi;
@@ -125,7 +125,7 @@ export const actions = {
                 if ( isEmpty(payload) ){
                     opts.query += '?sort=-evacoffensejournal.regnum';
                 } else {
-                    opts.query += `?id=${ payload }`;
+                    opts.query = `sin2:/v:8190818d-bf31-41d3-8e3c-08582b85f7e9/?id=${ payload }`;
                 }
                         
                 const res = await $nuxt.api(opts);

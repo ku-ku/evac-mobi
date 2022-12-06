@@ -23,25 +23,39 @@
                     </v-btn>
                 </v-toolbar-title>
             </v-toolbar>
-            <v-card-title>
-                <template v-if="has('new')"> 
-                    <v-icon>mdi-plus</v-icon>&nbsp;Новая заявка
-                </template>
-                <template v-else>
-                    <v-icon>mdi-application-edit-outline</v-icon>&nbsp;Редактирование
-                </template>
-            </v-card-title>
             <v-card-text>
+                <v-row align="center">
+                    <v-col cols="12" sm="6" class="title">
+                        <template v-if="has('new')"> 
+                            <v-icon>mdi-plus</v-icon>&nbsp;Новая заявка
+                        </template>
+                        <template v-else>
+                            <v-icon>mdi-application-edit-outline</v-icon>&nbsp;Редактирование
+                        </template>
+                    </v-col>
+                    <v-col cols="12" sm="6">
+                        <v-combobox label="Причина задержания"
+                                    v-model="row.offensereason"
+                                    item-text="offensereason"
+                                    item-value="offensereason"
+                                    eager
+                                    :return-object="false"
+                                    :items="causes"
+                                    :rules="[ rules.empty ]" 
+                                    hide-details>
+                        </v-combobox>
+                    </v-col>
+                </v-row>
                 <v-row>
                     <v-col cols="12">
                         <v-autocomplete label="Район/МО"
                                     item-text="city"
-                                    item-value="city"
+                                    item-value="id"
                                     hide-details
                                     :return-object="false"
                                     :items="cities"
                                     :rules="[ rules.empty ]" 
-                                    v-model="row.city">
+                                    v-model="row.cityid">
                         </v-autocomplete>
                     </v-col>
                 </v-row>
@@ -123,16 +137,6 @@
                 </v-row>
                 <v-row>
                     <v-col cols="12" sm="6">
-                        <v-combobox label="Причина задержания"
-                                    v-model="row.offensereason"
-                                    item-text="offensereason"
-                                    item-value="offensereason"
-                                    eager
-                                    :return-object="false"
-                                    :items="causes"
-                                    :rules="[ rules.empty ]" 
-                                    hide-details>
-                        </v-combobox>
                     </v-col>
                     <v-col cols="12" sm="6">
                         <v-text-field ref="arrival"
@@ -155,7 +159,9 @@
                 <v-btn type="submit"
                        tile
                        color="primary">
-                    оформить&nbsp;<v-icon small class="mdi-rotate-315">mdi-send</v-icon></v-btn>
+                        {{ has('new') ? 'оформить' : 'изменить' }}&nbsp;
+                        <v-icon small class="mdi-rotate-315">mdi-send</v-icon>
+                </v-btn>
             </v-card-actions>
         </v-card>
     </v-form>    
@@ -176,8 +182,7 @@ import { _SIN2_VIEWS_IDS } from '~/store/data.js';
 const _VIEW_ID = "8190818d-bf31-41d3-8e3c-08582b85f7e9";
 const _VIEW_URI= `sin2:/v:${ _VIEW_ID }`;
 
-
- var _ws = null;
+var _ws = null;
  
 export default {
     name: "EvArrest",
@@ -330,14 +335,14 @@ export default {
                     query: _VIEW_URI,
                     params: [
                                 {id: 'createdt',        type: 'datetime', value: $moment(this.row.at).add(utcOff,'minutes').toDate()},
-                                {id: 'city',            type: 'string', value: this.row.city},
-                                {id: 'stateid',         type: 'id', value: this.row.stateid},
-                                {id: 'vehiclekindname', type: 'string', value: this.row.vehiclekindname},
-                                {id: 'vehicleregnum',   type: 'string', value: this.row.vehicleregnum},
-                                {id: 'offensereason',   type: 'string', value: this.row.offensereason},
-                                {id: 'offenseaddress',  type: 'string', value: this.address},
-                                {id: 'lat',             type: 'string', value: this.row.coords.lat},
-                                {id: 'lon',             type: 'string', value: this.row.coords.lon}
+                                {id: 'cityid',          type: 'id',       value: this.row.cityid},
+                                {id: 'stateid',         type: 'id',       value: this.row.stateid},
+                                {id: 'vehiclekindname', type: 'string',   value: this.row.vehiclekindname},
+                                {id: 'vehicleregnum',   type: 'string',   value: this.row.vehicleregnum},
+                                {id: 'offensereason',   type: 'string',   value: this.row.offensereason},
+                                {id: 'offenseaddress',  type: 'string',   value: this.address},
+                                {id: 'lat',             type: 'string',   value: this.row.coords.lat},
+                                {id: 'lon',             type: 'string',   value: this.row.coords.lon}
                     ]
             }   //opts
             

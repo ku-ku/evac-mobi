@@ -1,5 +1,5 @@
 //const HOST_NAME = 'https://tr.krasnodar.ru';
-const HOST_NAME = 'http://192.168.61.245:8080';
+const HOST_NAME = /^dev/.test(process.env.NODE_ENV) ? 'http://192.168.61.245:8080' : '//evac.gkukkcodd.krasnodar.ru';
 
 export default {
   ssr: false,
@@ -18,7 +18,7 @@ export default {
       { name: 'format-detection', content: 'telephone=no' }
     ],
     link: [
-      { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
+      {rel: "icon", type: "image/x-icon",  href: "http://gkukkcodd.krasnodar.ru/wp-content/themes/gkukkcodd_new/images/favicon.png"}
     ]
   },
 
@@ -44,8 +44,8 @@ export default {
   },
   
   env: {
-      rpcUrl:  (/^dev/.test(process.env.NODE_ENV)) ? '/rpc/' : `${ HOST_NAME }/channel`,
-      apiUrl:  (/^dev/.test(process.env.NODE_ENV)) ? '/api/' : `${ HOST_NAME }/channel`,
+      rpcUrl:  (/^dev/.test(process.env.NODE_ENV)) ? '/rpc/' : `${ HOST_NAME }/rpc/`,
+      apiUrl:  (/^dev/.test(process.env.NODE_ENV)) ? '/api/' : `${ HOST_NAME }/api/`,
       natsWs:  { servers: "wss://tr.krasnodar.ru:4222/", user: "teva", pass: "teva25822" }
   },
   

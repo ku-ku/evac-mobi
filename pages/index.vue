@@ -56,7 +56,7 @@ export default {
                     sid = ws.subscribe('PUBLIC.EVA.status');
                     try {
                         for await (const m of sid) {
-                            self.notify(codec.decode(m.data));
+                            self.notify.call(self, codec.decode(m.data));
                         }
                     } catch(e){
                         console.log('ERR (ws-status)', e);

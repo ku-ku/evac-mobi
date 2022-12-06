@@ -78,7 +78,7 @@ export default {
                     return require("~/assets/error-page.png");
                 } 
                   
-                const uri = `${ window.location.protocol }//${ window.location.host + window.location.pathname}/#/auth/?mark=${ this.hash }`;
+                const uri = `${ window.location.protocol }//${ window.location.host}/#/auth/?mark=${ this.hash }`;
                 return `${ this.apiUrl }/barcode?size=877&url=${ encodeURIComponent(uri) }`;
             }
         }
