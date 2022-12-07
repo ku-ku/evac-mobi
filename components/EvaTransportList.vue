@@ -170,7 +170,6 @@ export default {
             const dt = $moment();
             this.at = `${ dt.format("HH:mm") }<small>${ dt.format("DD.MM.YYYY") }</small>`;
             this.page = 1;
-            console.log('transport', this.all);
         } catch(e){
             this.error = e;
             $nuxt.msg({text:"Ошибка получения списка эвакуированных транспортных средств", timeout:20000, color:"warning"});

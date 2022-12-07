@@ -18,7 +18,7 @@ export default {
       { name: 'format-detection', content: 'telephone=no' }
     ],
     link: [
-      {rel: "icon", type: "image/x-icon",  href: "http://gkukkcodd.krasnodar.ru/wp-content/themes/gkukkcodd_new/images/favicon.png"}
+      {rel: "icon", type: "image/x-icon",  href: "//gkukkcodd.krasnodar.ru/wp-content/themes/gkukkcodd_new/images/favicon.png"}
     ]
   },
 

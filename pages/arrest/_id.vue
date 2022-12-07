@@ -26,30 +26,8 @@
                 </v-toolbar-title>
             </v-toolbar>
             <v-card-text>
-                <v-row align="center">
-                    <v-col cols="12" sm="6">
-                        <v-autocomplete label="Район/МО"
-                                    item-text="city"
-                                    item-value="id"
-                                    hide-details
-                                    :return-object="false"
-                                    :items="cities"
-                                    :rules="[ rules.empty ]" 
-                                    v-model="row.cityid">
-                        </v-autocomplete>
-                    </v-col>
-                    <v-col cols="12" sm="6">
-                        <v-combobox label="Причина задержания"
-                                    v-model="row.offensereason"
-                                    item-text="offensereason"
-                                    item-value="offensereason"
-                                    eager
-                                    :return-object="false"
-                                    :items="causes"
-                                    :rules="[ rules.empty ]" 
-                                    hide-details>
-                        </v-combobox>
-                    </v-col>
+                <v-row class="text-subtitle-1">
+                    <v-col>Информация о задержании&nbsp;<v-icon>mdi-chevron-down</v-icon></v-col>
                 </v-row>
                 <v-row>
                     <v-col cols="12" sm="6">
@@ -72,8 +50,34 @@
                         </v-autocomplete>
                     </v-col>
                 </v-row>
+                <v-row>
+                    <v-col cols="12" sm="6">
+                        <v-autocomplete label="Район/МО"
+                                    item-text="city"
+                                    item-value="id"
+                                    hide-details
+                                    :return-object="false"
+                                    :items="cities"
+                                    :rules="[ rules.empty ]" 
+                                    v-model="row.cityid">
+                        </v-autocomplete>
+                    </v-col>
+                    <v-col cols="12" sm="6">
+                        <v-combobox label="Причина задержания"
+                                    id="offensereason"
+                                    v-model="row.offensereason"
+                                    item-text="offensereason"
+                                    item-value="offensereason"
+                                    eager
+                                    :return-object="false"
+                                    :items="causes"
+                                    :rules="[ rules.empty ]" 
+                                    hide-details>
+                        </v-combobox>
+                    </v-col>
+                </v-row>
                 <v-row class="text-subtitle-1">
-                    <v-col>Информация о ТС</v-col>
+                    <v-col>Информация о ТС&nbsp;<v-icon>mdi-chevron-down</v-icon></v-col>
                 </v-row>
                 <v-row>
                     <v-col cols="12" sm="6">
@@ -99,7 +103,7 @@
                 </v-row>
 <template v-if="!has('new')">
                 <v-row class="text-subtitle-1">
-                    <v-col >Информация о перемещении</v-col>
+                    <v-col>Информация о перемещении&nbsp;<v-icon>mdi-chevron-down</v-icon></v-col>
                 </v-row>
                 <v-row>
                     <v-col cols="12" sm="6">
@@ -233,7 +237,6 @@ export default {
             }
         };
     },
-    
     async fetch(){
         if (!this.row){
             return;
@@ -268,6 +271,11 @@ export default {
                }
             }
         }   // if ( isEmpty...
+    },      // fetch
+    mounted(){
+        this.$nextTick(()=>{
+            $(this.$el).find("#offensereason").focus();
+        });
     },
     computed: {
         readonly(){

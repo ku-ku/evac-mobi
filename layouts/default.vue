@@ -4,10 +4,17 @@
                          v-if="has('subject')"
                          temporary
                          fixed
-                         app
-                         >
+                         app>
         <v-list dense
                 nav>
+            <v-list-item v-if="has('region')">
+                <v-list-item-icon><v-icon>mdi-map-marker-check</v-icon></v-list-item-icon>
+                <v-list-item-title>{{ get("regiName") }}</v-list-item-title>
+            </v-list-item>
+            <v-list-item v-else>
+                <v-list-item-icon><v-icon color="red">mdi-map-marker-alert</v-icon></v-list-item-icon>
+                <v-list-item-title>Район не определен</v-list-item-title>
+            </v-list-item>
             <v-list-item
                 :to="{name: 'qr'}">
                 <v-list-item-icon><v-icon>mdi-qrcode</v-icon></v-list-item-icon>
@@ -62,13 +69,20 @@ export default {
             nav: false
         };
     },
+    async created(){
+        await this.$store.dispatch("data/read", "cities");
+    },
     methods: {
         get(q){
             switch(q){
                 case "geo":
                     this.$store.dispatch("geo/current");
                     break;
-            }
+                case "regiName":
+                    const { cityid } = this.user.region;
+                    const n = this.cities?.findIndex( r => r.id === cityid);
+                    return ( n > -1 ) ? this.cities[n].city : '';
+            }   //get
         },
         has(q){
             switch(q){
@@ -78,6 +92,8 @@ export default {
                     return !!this.$store.state.geo.ll.fine;
                 case "subject":
                     return !isEmpty(this.user?.id);
+                case "region":
+                    return (!!this.user?.region);
             }
             return false;
         },
@@ -99,7 +115,8 @@ export default {
         },
         ...mapState({
             addr: state => geo.a2s(state.geo.addr?.address),
-            user: state => state.profile.subject
+            user: state => state.profile.subject,
+            cities: state => state.data.cities
         })
     }
 }
