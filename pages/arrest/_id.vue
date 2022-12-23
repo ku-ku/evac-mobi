@@ -63,17 +63,17 @@
                         </v-autocomplete>
                     </v-col>
                     <v-col cols="12" sm="6">
-                        <v-combobox label="Причина задержания"
+                        <v-autocomplete label="Причина задержания"
                                     id="offensereason"
-                                    v-model="row.offensereason"
+                                    v-model="row.reasonid"
                                     item-text="offensereason"
-                                    item-value="offensereason"
+                                    item-value="id"
                                     eager
                                     :return-object="false"
                                     :items="causes"
                                     :rules="[ rules.empty ]" 
                                     hide-details>
-                        </v-combobox>
+                        </v-autocomplete>
                     </v-col>
                 </v-row>
                 <v-row class="text-subtitle-1">
@@ -273,6 +273,7 @@ export default {
         }   // if ( isEmpty...
     },      // fetch
     mounted(){
+        console.log('row', this.row);
         this.$nextTick(()=>{
             $(this.$el).find("#offensereason").focus();
         });
@@ -346,9 +347,9 @@ export default {
                                 {id: 'createdt',        type: 'datetime', value: $moment(this.row.at).add(utcOff,'minutes').toDate()},
                                 {id: 'cityid',          type: 'id',       value: this.row.cityid},
                                 {id: 'stateid',         type: 'id',       value: this.row.stateid},
+                                {id: 'reasonid',        type: 'id',       value: this.row.reasonid},
                                 {id: 'vehiclekindname', type: 'string',   value: this.row.vehiclekindname},
                                 {id: 'vehicleregnum',   type: 'string',   value: this.row.vehicleregnum},
-                                {id: 'offensereason',   type: 'string',   value: this.row.offensereason},
                                 {id: 'offenseaddress',  type: 'string',   value: this.address},
                                 {id: 'lat',             type: 'string',   value: this.row.coords.lat},
                                 {id: 'lon',             type: 'string',   value: this.row.coords.lon}
