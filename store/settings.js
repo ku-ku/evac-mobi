@@ -1,3 +1,5 @@
+const _LS_SETTS_KEY = '_eva_setts';
+
 var PushController;
 
 export const state = () => ({
@@ -5,7 +7,8 @@ export const state = () => ({
         fcmId: undefined
     },
     env: undefined,
-    quality: -1
+    quality: -1,
+    saved: {}
 });
 
 export const mutations = {
@@ -18,6 +21,24 @@ export const mutations = {
       const {fcmId, value} = payload;
       state.notifi.fcmId = fcmId;
     },
+    readSaved(state){
+        try {
+            const s = window.localStorage.getItem(_LS_SETTS_KEY);
+            if ( (s) && /^\{+/.test(s) ){
+                state.saved = JSON.parse(s);
+            }
+        } catch(e){
+            console.log('ERR (ls-read saved)', e);
+        }
+    },
+    setSaved(state, payload) {
+        const stt = state.saved || {};
+        Object.keys(payload).forEach( k => {
+            stt[k] = payload[k];
+        });
+        state.saved = stt;
+        window.localStorage.setItem(_LS_SETTS_KEY, JSON.stringify(stt));
+    }   //setSaved
 };  //mutations 
 
 export const actions = {
@@ -61,7 +82,6 @@ export const actions = {
         
         return new Promise(_p);
     },   //initPushes
-    
     
     destroy({commit}) {
         if (!!PushController) {

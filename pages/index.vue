@@ -1,6 +1,11 @@
 <template>
   <v-row class="mt-5">
-      <v-col cols="12" align="center" justify="center">
+      <v-col v-if="$store.getters['profile/is']('evac-role')"
+             cols="12" align="center" justify="center">
+            <eva-eva-rq ref="evarq" />
+      </v-col>    
+      <v-col v-else
+             cols="12" align="center" justify="center">
             <v-btn tile
                    color="primary"
                    :to="{name:'arrest-id', params:{id:null}}">
@@ -28,6 +33,7 @@
 
 <script>
 import EvaTransportList from "~/components/EvaTransportList";
+import EvaEvaRq from "~/components/EvaEvaRq";
 import { isEmpty } from "~/utils";
 import { codec } from "~/utils/http";
 
@@ -37,7 +43,13 @@ export default {
     middleware: 'auth',
     name: 'IndexPage',
     components: {
-        EvaTransportList
+        EvaTransportList,
+        EvaEvaRq
+    },
+    head(){
+        return {
+                    title: `Эвакуация: ${ (this.$refs["evarq"]) ? (this.$refs["evarq"]).title || '' : this.$refs["transportList"]?.tilte }`
+               };
     },
     created(){
         const self = this;
@@ -68,13 +80,22 @@ export default {
     activated(){
         const id = this.$route.params?.id;
         if ( !isEmpty(id) ){
-            this.$refs["transportList"].highlight(id);
+            if (this.$refs["evarq"]){
+                this.$refs["evarq"].userq(id);
+            } else {
+                this.$refs["transportList"]?.highlight(id);
+            }
         }
     },
     methods: {
         notify({ id }){
-            console.log('notify', id);
-            this.$refs["transportList"]?.highlight2(id);
+            if (this.$refs["evarq"]){
+                console.log('notify->RQ', id);
+                this.$refs["evarq"].userq(id);
+            } else {
+                console.log('notify->list', id);
+                this.$refs["transportList"]?.highlight2(id);
+            }
         }
     }
 }

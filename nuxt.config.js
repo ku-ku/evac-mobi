@@ -1,5 +1,5 @@
-//const HOST_NAME = 'https://tr.krasnodar.ru';
-const HOST_NAME = /^dev/.test(process.env.NODE_ENV) ? 'http://192.168.61.245:8080' : '//evac.gkukkcodd.krasnodar.ru';
+const HOST_NAME = 'https://evac.gkukkcodd.krasnodar.ru';
+//const HOST_NAME = /^dev/.test(process.env.NODE_ENV) ? 'http://192.168.61.245:8080' : '//evac.gkukkcodd.krasnodar.ru';
 
 export default {
   ssr: false,

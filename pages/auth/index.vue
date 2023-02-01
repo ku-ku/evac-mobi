@@ -70,12 +70,12 @@ const USER_DEFS = {
 };
 
 export default {
-  name: 'SignInPage',
-  layout: 'empty',
-  fetchOnServer: false,
-  components: {
-      EvaLinkStatus
-  },
+    name: 'SignInPage',
+    layout: 'empty',
+    fetchOnServer: false,
+    components: {
+        EvaLinkStatus
+    },
     async asyncData({ store, query }){
         
         var preauth = false;

@@ -14,6 +14,7 @@ import { http as api, msg as ws, codec } from "~/utils/http";
 
 export default async function( ctx ){
         
+    console.log('APP (start)', ctx);
     const { app } = ctx;
     const { env } = app.context;
     
@@ -46,9 +47,13 @@ export default async function( ctx ){
             });
             worker.postMessage({type:'init', env: app.context.env});
 * 
-*/
+*/      
+        },
+        created(){
+            this.$store.commit("settings/readSaved");
         },
         mounted(){
+            const { query } = ctx;
             (async ()=>{
                 try {
                     await this.$store.dispatch("branding/read");
@@ -137,6 +142,8 @@ export default async function( ctx ){
                     qaHellow = setInterval(this.bepooling, 5*60*1000);
                 }
             },
+            
+            
         },       //methods
         watch: {
             "subject.id"(val){

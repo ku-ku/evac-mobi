@@ -93,6 +93,8 @@ const http = options => {
             options.auth = false; //reset (don`t sending)
             params.url = env.rpcUrl + '?d=token';
             params.processData = false;
+            params.async = false;
+            params.timeout = 10000;
             params.headers = {
                 "X-Mark-IV": options.mark
             };

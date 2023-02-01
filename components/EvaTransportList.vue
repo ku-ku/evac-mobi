@@ -186,7 +186,10 @@ export default {
                 return this.all.slice((this.page - 1) * PAGE_SIZE, this.page * PAGE_SIZE);
             } 
             return null;
-        }   //transport
+        },   //transport
+        title(){
+            return '';  //TODO:
+        }
     },
     methods: {
         empty,

@@ -38,13 +38,18 @@ export const state = () => ({
 export const mutations = {
     set(state, payload){
         Object.keys(payload).map( k => {
-            state[k] = payload[k];
+            if ("subject"===k){
+                state.subject = payload[k];
+            } else if (state.subject){
+                state.subject[k] = payload[k];
+            }
         });
     }
 };  //mutations 
 
 export const actions = {
     /**
+     * Pre-auth by QR-code hash (payload) or token (from LS)
      * @param(payload): type String - hash for getting token
      */
     async preauth({ state, commit, dispatch }, payload){
@@ -67,9 +72,13 @@ export const actions = {
                     return;
                 }
             } else {
-                at = state.subject?.tokens["access"];
-                if (!at){
-                    at = window.localStorage.getItem(_LS_TOKEN_KEY);
+                try {
+                    at = state.subject?.tokens["access"];
+                    if (!at){
+                        at = JSON.parse(window.localStorage.getItem(_LS_TOKEN_KEY));
+                    }
+                } catch(e){
+                    console.log('ERR (LS-at)', e);
                 }
             }
             
@@ -77,9 +86,6 @@ export const actions = {
                 reject({message: 'No access'});
             } else {
                 try {
-                    if (typeof at === "string"){
-                        at = JSON.parse(at);
-                    }
                     
                     document.cookie = 'JSESSIONID=;  Path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;';
                     
@@ -110,6 +116,7 @@ export const actions = {
                         throw r.error;
                     }
                 } catch(e) {
+                    console.log('ERR (preauth)', e);
                     commit('set', {subject: null});
                     reject(e);
                 }
@@ -178,5 +185,22 @@ export const getters = {
             return state.subject.tokens["access"]?.token;
         }
         return null;
+    },
+    is: state => q => {
+        if (state.subject){
+            switch(q){
+                case "evac-role":
+                    var res = false;
+                    Object.keys(state.subject.roles).forEach( k => {
+                        if ( /(эвакуатор)+/gi.test(state.subject.roles[k].title)){
+                            res = true;
+                        }
+                    });
+                    return res;
+                case "evacuator":
+                    return !!state.subject?.evacuator;
+            }
+        }
+        return false;
     }
 };
