@@ -96,6 +96,12 @@ export default {
                 console.log('notify->list', id);
                 this.$refs["transportList"]?.highlight2(id);
             }
+            try {
+                const audio = new Audio("/meloboom.mp3");
+                audio.play();
+            } catch(e){
+                console.log('ERR (audio)', e);
+            }
         }
     }
 }

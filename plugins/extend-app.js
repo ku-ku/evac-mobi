@@ -51,6 +51,7 @@ export default async function( ctx ){
         },
         created(){
             this.$store.commit("settings/readSaved");
+            this.$store.dispatch("geo/current");
         },
         mounted(){
             const { query } = ctx;

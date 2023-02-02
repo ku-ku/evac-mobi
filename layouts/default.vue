@@ -10,7 +10,10 @@
             <v-list-item v-if="has('evacuator')"
                          v-on:click="evChange">
                 <v-list-item-icon><v-icon small color="primary">mdi-tow-truck</v-icon></v-list-item-icon>
-                <v-list-item-title>Выбрать другой эвакуатор</v-list-item-title>
+                <v-list-item-content>
+                    <v-list-item-title class="text-uppercase">{{get('evaGov')}}</v-list-item-title>
+                    <v-list-item-subtitle>Выбрать другой эвакуатор</v-list-item-subtitle>
+                </v-list-item-content>
             </v-list-item>
             <v-list-item v-if="has('region')">
                 <v-list-item-icon><v-icon>mdi-map-marker-check</v-icon></v-list-item-icon>
@@ -87,6 +90,8 @@ export default {
                     const { cityid } = this.user.region;
                     const n = this.cities?.findIndex( r => r.id === cityid);
                     return ( n > -1 ) ? this.cities[n].city : '';
+                case "evaGov":
+                    return this.$store.state.profile.subject?.evacuator?.govnum;
             }   //get
         },
         has(q){

@@ -1,7 +1,7 @@
 <template>
     <v-card v-if="has('evacuator')" class="eva-rq"
             tile>
-        <v-card-title v-if="has('rq')">
+        <v-card-title v-if="has('rq')" class="text-body-1 font-weight-light">
             Информация о задержании
         </v-card-title>    
         <v-card-text v-if="has('error')">

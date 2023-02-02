@@ -185,5 +185,12 @@ export const getters = {
             }
         }
         return ll;
+    },
+    is: state => q => {
+        switch(q){
+            case "fine":
+                return state.ll?.fine;
+        }
+        return false;
     }
 };
