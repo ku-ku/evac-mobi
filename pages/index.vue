@@ -59,6 +59,7 @@ export default {
                 $nuxt.msg({text:"Необходимо разрешить уведомления", color: "warning"});
             }
         });
+        
         (async ()=>{
             try {
                 if (!ws){
@@ -80,28 +81,13 @@ export default {
     activated(){
         const id = this.$route.params?.id;
         if ( !isEmpty(id) ){
-            if (this.$refs["evarq"]){
-                this.$refs["evarq"].userq(id);
-            } else {
-                this.$refs["transportList"]?.highlight(id);
-            }
+            this.notify({id});
         }
     },
     methods: {
         notify({ id }){
-            if (this.$refs["evarq"]){
-                console.log('notify->RQ', id);
-                this.$refs["evarq"].userq(id);
-            } else {
-                console.log('notify->list', id);
-                this.$refs["transportList"]?.highlight2(id);
-            }
-            try {
-                const audio = new Audio("/meloboom.mp3");
-                audio.play();
-            } catch(e){
-                console.log('ERR (audio)', e);
-            }
+            console.log('notify->RQ', id);
+            const myrq = (this.$refs["evarq"]) ? this.$refs["evarq"].userq(id) : this.$refs["transportList"]?.highlight2(id);
         }
     }
 }

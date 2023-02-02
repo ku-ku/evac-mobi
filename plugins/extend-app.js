@@ -7,8 +7,6 @@ import 'vuetify/dist/vuetify.min.css';
 import jQuery from 'jquery';
 window["$"] = jQuery;
 
-//TODO: import Worker from 'web-worker' (+see beforeCreate);
-
 import { isEmpty } from "~/utils";
 import { http as api, msg as ws, codec } from "~/utils/http";
 
@@ -26,8 +24,9 @@ export default async function( ctx ){
     });
 
     var appMsg = null,
-        qaHellow = null,
         _ws = null, sid = null; //websock sub (see wspooling)
+
+    var _swr = null;            //service-worker register
 
     if (!app.mixins) {
         app.mixins = [];
@@ -40,14 +39,26 @@ export default async function( ctx ){
             }
         },
         beforeCreate(){
-/*            
-            const worker = new Worker('/worker.js');
-            worker.addEventListener('message', e => {
-                console.log(e.data)  
+            navigator.serviceWorker.register('/worker.js').then(reg => {
+                _swr = reg;
+                /* TODO:
+                    const subsOpts = {
+                        userVisibleOnly: true,
+                        //applicationServerKey: btoa('BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8U')
+                    };
+                    return reg.pushManager.subscribe(subsOpts);
+                */
+            }).then( pushSubscription => {
+                console.log('PushSubscription: ', JSON.stringify(pushSubscription));
+                return pushSubscription;
             });
-            worker.postMessage({type:'init', env: app.context.env});
-* 
-*/      
+            
+            navigator.serviceWorker.onmessage = e => {
+                if ('_be_pooling'===e.data?.type){
+                    this._set_qa(e.data.time);
+                }
+            };
+            
         },
         created(){
             this.$store.commit("settings/readSaved");
@@ -65,9 +76,7 @@ export default async function( ctx ){
             })();
         },
         beforeDestroy(){
-            if (!!qaHellow){
-                clearInterval(qaHellow);
-            }
+            this.swmsg({type: "stop"});
         },
         methods: {
             api,
@@ -86,70 +95,24 @@ export default async function( ctx ){
                 }
                 return appMsg.show(msg);
             },
-            bepooling(){
-                const SUB_KEY = `PUBLIC.EVA.hellow-${ this.subject?.id || 'unknown' }`,
-                      store   = this.$store;
-                const _set_qa = ( tm ) => {
-                    if (tm < 0){
-                        store.commit("settings/set", {quality: -1});
-                    } else {
-                        store.commit("settings/set", {quality: (tm < 50) ? 1 : (tm < 200) ? 2 : 3 });
-                    }
-                };
-                
-                //TODO: avg for test's
-                //ws-poolling
-                ( async ()=>{
-                    if (!_ws){
-                        _ws = await this.ws();
-                        sid = _ws.subscribe(SUB_KEY);
-                    }
-
-                    try {
-                        for await (const m of sid) {
-                            const tm = (new Date()).getTime() - codec.decode(m.data).dt;
-                            _set_qa(tm);
-                        }
-                    } catch(e){
-                        console.log('ERR (ws)', e);
-                        _set_qa(-1);
-                    }
-                    
-                    _ws.publish(SUB_KEY, codec.encode({dt: (new Date()).getTime()}));
-                })();
-                    
-                //rpc-poolling
-                ( async ()=>{
-                    var tm = (new Date()).getTime();
-                    $.ajax({
-                        url: `${ env.rpcUrl }?d=ping`,
-                        type: "POST",
-                        timeout: 1000,
-                        processData: false,
-                        cache: false,
-                        success: (resp, status) => {
-                            tm = (new Date()).getTime() - tm;
-                            _set_qa(tm);
-                        },
-                        error: (e, status) => {
-                            console.log('ERR (rpc)', e, status);
-                            _set_qa(-1);
-                        }
-                    });
-                    
-                })();
-                
-                if (!qaHellow){
-                    qaHellow = setInterval(this.bepooling, 5*60*1000);
-                }
+            /**
+             * Service-worker post message
+             */
+            swmsg(msg){
+                navigator.serviceWorker?.controller?.postMessage(msg);
             },
-            
-            
+            _set_qa(tm) {
+                if (tm < 0){
+                    this.$store?.commit("settings/set", {quality: -1});
+                } else {
+                    this.$store?.commit("settings/set", {quality: (tm < 50) ? 1 : (tm < 200) ? 2 : 3 });
+                }
+            }
         },       //methods
         watch: {
             "subject.id"(val){
                 if ( !isEmpty(val) ){
-                    this.bepooling();
+                    this.swmsg({type:"init", env});
                 }
             }
         }

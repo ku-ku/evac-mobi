@@ -1,6 +1,8 @@
 <template>
-    <v-card v-if="has('evacuator')" class="eva-rq"
-            tile>
+    <vue-pull-refresh v-if="has('evacuator')" 
+                      :on-refresh="reload" 
+                      :config="pullRefreshConfig">
+        <v-card class="eva-rq" tile>
         <v-card-title v-if="has('rq')" class="text-body-1 font-weight-light">
             Информация о задержании
         </v-card-title>    
@@ -72,6 +74,7 @@
             </v-btn>
         </v-card-actions>
     </v-card>
+    </vue-pull-refresh>
     <div v-else class="eva-vehicle">
         <v-form v-on:submit.stop.prevent="usevehicle">
             <v-text-field
@@ -95,6 +98,7 @@
 </template>
 <script>
 import { mapState } from 'vuex';
+import VuePullRefresh from 'vue-pull-refresh';
 import { isEmpty, MODES } from "~/utils";
 import { sin2obj } from "~/store/data";
 const $moment = require("moment");
@@ -104,16 +108,28 @@ $moment.locale('ru');
 const _VIEW_ID = "8190818d-bf31-41d3-8e3c-08582b85f7e9";
 const _VIEW_URI= `sin2:/v:${ _VIEW_ID }`;
 
+const pullRefreshConfig = {
+    errorLabel: '',
+    startLabel: '',
+    readyLabel: 'обновить',
+    loadingLabel: 'загрузка...',
+    pullDownHeight: 100
+};
+
 export default {
     name: 'EvaEvaRq',
     data(){
         return {
             MODES,
             mode: MODES.default,
+            pullRefreshConfig,
             gov: null,
             rq: null,
             error: null
         };
+    },
+    components: {
+        VuePullRefresh
     },
     mounted(){
         this.gov = this.$store.state.settings.saved?.evaGovNum;
@@ -189,8 +205,10 @@ export default {
                 }
                 this.$store.commit("profile/set", {evacuator: evacs[n]});
                 this.$store.commit("settings/setSaved", {evaGovNum: evacs[n].govnum});
-                $nuxt.$children.forEach( c => c.$forceUpdate() );   //TODO: in other page
-                this.$nextTick(this.getrq);
+                setTimeout(()=>{
+                    $nuxt.$children.forEach( c => c.$forceUpdate() );   //TODO: in other page
+                    this.getrq();
+                }, 300);
             } catch(e){
                 console.log('ERR usevehicle', e);
                 this.error = e;
@@ -206,7 +224,7 @@ export default {
             var n = this.statuses?.findIndex( s => rq.stateid === s.id );
             rq.status = ( n > -1) ? this.statuses[n].name : '';
             
-            n = this.parkings?.findIndex( p => rq.parkingid = p.id );
+            n = this.parkings?.findIndex( p => rq.parkingid === p.id );
             rq.parking = ( n > -1) ? this.parkings[n].name : '';
             this.rq = rq;
             console.log('RQ', this.rq);
@@ -242,13 +260,12 @@ export default {
          * Full read RQ info
          */
         async getrq(id){
-            
             try {
                 const opts = {
                     type: 'core-read',
                     query: _VIEW_URI + `?filter=and(
                                                         exists(\"a5603bce-4795-432b-b2c3-ce9323773015\", \"and(eq(super.field(\\\".stateId\\\"),field(\\\".id\\\")),eq(field(\\\".active\\\"),param(true,\\\"boolean\\\")))\"),
-                                                        eq(field(".vehicleEvacId"),param("${ this.evacuator.id }", "id"))
+                                                        eq(field(".vehicleEvacId"),param("${ this.evacuator?.id }", "id"))
                                                 )&sort=-evacOffenseJournal.regNum`
                 },
                 byIdAttr = (typeof id !== "undefined");
@@ -266,18 +283,20 @@ export default {
                     if ( byIdAttr && this.has('rq-new') ) {
                         if ( !Notification.requestPermission(res => {
                             if (res === 'granted') {
-                                setTimeout(()=>{
-                                    const evaNotifi = new Notification("Поступила заявка", {
-                                            requireInteraction: true,
-                                            tag: "eva-notify",
-                                            body: `№ ${this.rq.regnum} ${this.rq.at}: ${this.rq.offenseaddress}`,
-                                            icon: require('@/assets/eva-notify.png')
+                                navigator.serviceWorker.ready.then( registration => {
+                                    registration.showNotification("Поступила заявка", {
+                                        requireInteraction: true,
+                                        tag: "eva-notify",
+                                        body: `№ ${this.rq.regnum} ${this.rq.at}: ${this.rq.offenseaddress}`,
+                                        icon: require('@/assets/eva-notify.png'),
+                                        image:require('@/assets/eva-notify.png'),
+                                        vibrate: [300, 100, 400],
+                                        renotify: true
                                     });
-
-                                    evaNotifi.onclick = ()=>{
-                                        window.focus();
-                                    };    
-                                }, 500);
+                                    window.focus();
+                                });
+                                const audio = new Audio("/meloboom.mp3");
+                                audio.play();
                             } else {
                                 $nuxt.msg({text:"Необходимо разрешить уведомления", type: "warning", timeout: 20000 });
                             }
@@ -329,11 +348,20 @@ export default {
         changeVc(){
             this.$store.commit("profile/set", {evacuator: null});
             this.$forceUpdate();
+        },
+        
+        reload(){
+            this.getrq(this.rq?.id);
         }
     }
     
 }    
 </script>
+<style lang="scss">
+    .pull-down-header{
+        background-color: #607D8B !important;
+    }
+</style>    
 <style lang="scss" scoped>
     .eva-rq{
         & .v-card__title{
