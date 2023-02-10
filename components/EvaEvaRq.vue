@@ -261,11 +261,13 @@ export default {
          */
         async getrq(id){
             try {
+                const evacuator = this.$store.state.profile.subject?.evacuator;
+                
                 const opts = {
                     type: 'core-read',
                     query: _VIEW_URI + `?filter=and(
                                                         exists(\"a5603bce-4795-432b-b2c3-ce9323773015\", \"and(eq(super.field(\\\".stateId\\\"),field(\\\".id\\\")),eq(field(\\\".active\\\"),param(true,\\\"boolean\\\")))\"),
-                                                        eq(field(".vehicleEvacId"),param("${ this.evacuator?.id }", "id"))
+                                                        eq(field(".vehicleEvacId"),param("${ evacuator?.id }", "id"))
                                                 )&sort=-evacOffenseJournal.regNum`
                 },
                 byIdAttr = (typeof id !== "undefined");
@@ -358,6 +360,9 @@ export default {
 }    
 </script>
 <style lang="scss">
+    body {
+      overscroll-behavior: contain;
+    }    
     .pull-down-header{
         background-color: #607D8B !important;
     }

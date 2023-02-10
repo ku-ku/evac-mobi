@@ -27,7 +27,7 @@ function lookup(a){
         if (!a){
             reject('no-addr');
         }
-        const params = (withNum)=>{
+        const params = withNum => {
             const _params = new URLSearchParams();
             _params.append('country', 'Россия');
             if (!!a.city){
@@ -45,10 +45,10 @@ function lookup(a){
         };
         
         $.getJSON('https://nominatim.openstreetmap.org/search?' + params(true), {timeout:5000})
-            .then((data)=>{resolve(data);})
+            .then( data => { resolve(data); })
             .catch(()=>{
                 $.getJSON('https://nominatim.openstreetmap.org/search?' + params(false), {timeout:5000})
-                    .then((data)=>{resolve(data);})
+                    .then( data => {resolve(data);})
                     .catch(()=>{reject('no-addr searching:' + params(false));});
         });
     };

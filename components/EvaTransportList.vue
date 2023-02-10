@@ -86,42 +86,51 @@
                                      v-on:click="edit(t)">
                             <v-row>
                                 <v-col class="dt" v-html="get('dt', t.createdt)"></v-col>
-                                <v-col col="auto" class="vehicle">
+                                <v-col class="vehicle">
                                     <div class="gov">
                                         {{ t.vehicleregnum }}
                                         &nbsp;<span class="kind">{{ t.vehiclekindname }}</span>
                                     </div>
                                     <div class="meta">
                                         <div class="addr"><v-icon x-small>mdi-map-marker-outline</v-icon>{{ t.offenseaddress }}</div>
-                                        <div class="parking"><v-icon x-small>mdi-map-marker-radius</v-icon>стоянка:&nbsp;{{ t.evacoffensejournalParkingidName }}</div>
+                                        <div class="parking">
+                                            <v-icon x-small>mdi-map-marker-radius</v-icon>&nbsp;{{ t.evacoffensejournalParkingidName }}
+                                            <div class="phone"
+                                                 v-if="!empty(t.evacoffensejournalParkingidPhone)">
+                                                <v-tooltip bottom>
+                                                    <template v-slot:activator="{ on }">
+                                                        <v-icon x-small>mdi-phone</v-icon>
+                                                        <a :href="'tel://'+t.evacoffensejournalParkingidPhone"
+                                                           v-on="on">
+                                                            {{t.evacoffensejournalParkingidPhone}}
+                                                        </a>
+                                                    </template>
+                                                    <span>позвонить на стоянку</span>
+                                                </v-tooltip>    
+                                            </div>
+                                        </div>
                                         <div class="wait d-block d-sm-none ml-auto">
                                             <v-icon x-small>mdi-clock-outline</v-icon>
                                             {{ empty(t.arrivaltime) ? '-' : t.arrivaltime.replace(/\D+/, ':') }}
                                         </div>
                                     </div>
                                     <div class="meta">
-                                        <div class="status">
-                                            <v-icon x-small>mdi-flag-variant</v-icon>
-                                            {{ t.evacoffensejournalStateidName }}
-                                        </div>
                                         <div class="truck" v-if="!empty(t.evacoffensejournalVehicleevacidGovnum)">
                                             <v-icon x-small>mdi-tow-truck</v-icon>
                                             {{ t.evacoffensejournalVehicleevacidGovnum }}
                                         </div>    
-                                        <div class="phone ml-sm-auto"
-                                             v-if="!empty(t.evacoffensejournalParkingidPhone)">
-                                            <v-tooltip bottom>
-                                                <template v-slot:activator="{ on }">
-                                                    <v-icon x-small>mdi-phone</v-icon>
-                                                    <a :href="'tel://'+t.evacoffensejournalParkingidPhone"
-                                                       v-on="on">
-                                                        {{t.evacoffensejournalParkingidPhone}}
-                                                    </a>
-                                                </template>
-                                                <span>позвонить на стоянку</span>
-                                            </v-tooltip>    
+                                        <div class="status">
+                                            <v-icon x-small>mdi-flag-variant</v-icon>
+                                            {{ t.evacoffensejournalStateidName }}
                                         </div>
                                     </div>
+                                    <div class="meta waitime" v-if="t.active">
+                                        <v-btn small color="primary"
+                                               tile
+                                               v-on:click.stop.prevent="gomap(t)">
+                                            {{ t.waitime }}
+                                        </v-btn>
+                                    </div>    
                                 </v-col>
                                 <v-col class="d-none d-sm-block text-right wait">
                                     {{ empty(t.arrivaltime) ? '-' : t.arrivaltime.replace(/\D+/, ':') }}
@@ -142,12 +151,14 @@
 </template>
 <script>
 import { isEmpty as empty } from "~/utils";
+import geo from "~/utils/geo.js";
 
 const $moment = require("moment");
 const now = $moment().format("DD.MM.YYYY");
 const PAGE_SIZE = 20;
 
 var hTimer = false; //for search input
+var hInt = false;   //for recalc waitime`s
 
 export default {
     name: 'EvaTransportList',
@@ -165,11 +176,31 @@ export default {
     },
     async fetch(){
         this.error = null;
+        if ( hInt ) {
+            clearInterval(hInt);
+            hInt = false;
+        }
         try {
-            this.all = [ ...await this.$store.dispatch("data/transport") ];
+            const all = [ ...await this.$store.dispatch("data/transport") ];
+            
+            all.forEach( a => {
+                a.active = (a.vehicleevacid)
+                           && (
+                                  /(работ)+/gi.test(a.evacoffensejournalStateidName)
+                               || /(назнач)+/gi.test(a.evacoffensejournalStateidName)
+                            );
+                a.active = true;    
+            });
+            
+            this.all = all;
             const dt = $moment();
             this.at = `${ dt.format("HH:mm") }<small>${ dt.format("DD.MM.YYYY") }</small>`;
             this.page = 1;
+            
+            hInt = setInterval( ()=>{this.calcWaitimes();}, 1000*60 );
+            this.calcWaitimes();
+            
+            console.log('transport', this.all);
         } catch(e){
             this.error = e;
             $nuxt.msg({text:"Ошибка получения списка эвакуированных транспортных средств", timeout:20000, color:"warning"});
@@ -195,6 +226,8 @@ export default {
         empty,
         has(q){
             switch(q){
+                case "active":
+                    return (this.all?.filter( a => a.active).length > 0);
                 case "all":
                     return (this.all?.length > 0);
                 case "one":
@@ -224,12 +257,38 @@ export default {
             $(this.$el).find('input').val('');
             this.$fetch();
         },
+        calcWaitimes(){
+            const coords = this.$store.state.geo.ll;
+            
+            const _set_dist = (id, distance) => {
+                const n = this.all.findIndex( a => a.id === id );
+                const d = $moment.duration((distance/20000)*3600.0*1000);
+                this.all[n].distance = distance;
+                this.all[n].waitime = ((d.hours() > 0) ? d.hours() + ' ч.' : '') + d.minutes() + ' мин.';
+            };
+            
+            this.all.filter( a => a.active ).forEach( a => {
+                $nuxt.api( {
+                    type: 'api-call',
+                    url: `publicApi?call=lastVehicle&arg.ids=${ a.vehicleevacid }`
+                }).then( res => {
+                    const _coords = (!!a.lon) ? {lat: a.lat, lon: a.lon} : coords;
+                    if (res.length > 0){
+                        _set_dist(a.id, geo.distance(_coords, res[0]));
+                        this.$forceUpdate();
+                    }
+                });
+            });
+        },  //calcWaitimes
         onpage(){
             this.$nextTick( ()=> $nuxt.$vuetify.goTo(0) );
         },
         edit(t){
             this.selitem = t.id;
             this.$router.push({ name: 'arrest-id', params: {id: t.id} });
+        },
+        gomap(t){
+            this.$router.push({name:'map',params:{qr: t}});
         },
         async highlight(id, nosel = false, q = 0){
             if (this.$fetchState.pending){
@@ -322,6 +381,7 @@ export default {
                 font-size: 1rem;
                 padding-left: 0;
                 padding-right: 0;
+                width: 5rem;
                 max-width: 5rem;
                 & .dt {
                     font-size: 0.7rem;
@@ -359,6 +419,9 @@ export default {
                     }
                     & .v-icon{
                         margin-right: 0.3rem;
+                    }
+                    &.waitime{
+                        margin-top: 0.25rem;
                     }
                 }
             }

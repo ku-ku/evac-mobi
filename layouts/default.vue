@@ -39,7 +39,7 @@
       <v-btn icon v-on:click="logout"><v-icon small>mdi-logout</v-icon></v-btn>
     </v-app-bar>
     <v-main>
-      <v-container>
+      <v-container v-bind:class="{map: has('map')}">
         <Nuxt keep-alive :keep-alive-props="{ exclude: ['SignInPage', 'EvaTransportList', 'EvArrest'] }" />
       </v-container>
     </v-main>
@@ -104,6 +104,8 @@ export default {
                     return !isEmpty(this.user?.id);
                 case "region":
                     return (!!this.user?.region);
+                case "map":
+                    return 'map'===this.$route.name;
                 case "evacuator":
                     return this.$store.getters["profile/is"]("evacuator");
             }
@@ -154,5 +156,12 @@ export default {
     .v-footer{
         font-size: 0.85rem;
     }
-    
+    .container{
+        &.map{
+                max-width: 100%;
+                padding:0;
+                height: 100%;
+                min-height: 100%;
+        }
+    }
 </style>

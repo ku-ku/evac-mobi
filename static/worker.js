@@ -56,7 +56,7 @@ const _be_pooling = async() => {
 
 function init(){
     if (!hqaInt){
-        hqaInt = setInterval(_be_pooling, 1*60*1000);
+        hqaInt = setInterval(_be_pooling, 5*60*1000);
     }
     _be_pooling();
 };      //init

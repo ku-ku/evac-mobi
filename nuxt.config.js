@@ -6,8 +6,8 @@ export default {
   target: 'static',
 
   head: {
-    titleTemplate: '%s - evac-mobi',
-    title: 'evac-mobi',
+    titleTemplate: '%s',
+    title: 'ЭВАКУАЦИЯ',
     htmlAttrs: {
       lang: 'ru'
     },
@@ -18,7 +18,8 @@ export default {
       { name: 'format-detection', content: 'telephone=no' }
     ],
     link: [
-      {rel: "icon", type: "image/x-icon",  href: "//gkukkcodd.krasnodar.ru/wp-content/themes/gkukkcodd_new/images/favicon.png"}
+      {rel: "icon", type: "image/x-icon",  href: "//gkukkcodd.krasnodar.ru/wp-content/themes/gkukkcodd_new/images/favicon.png"},
+      { rel: 'stylesheet', type: 'text/css', href: `${HOST_NAME}/css/ol.css`},
     ]
   },
 
@@ -64,10 +65,10 @@ export default {
               pathRewrite: {'^/api/branding': ''}
           },
           "/api/publicApi": {
-              target: `${ HOST_NAME }/channel/api/publicApi`,
+              target: `${ HOST_NAME }/api/publicApi`,
               pathRewrite: {'^/api/publicApi': ''}
           },
-          "/api": 'http://192.168.61.245:8880',
+          "/api": `${ HOST_NAME }`,
           "/rpc": `${ HOST_NAME }`
   },
   

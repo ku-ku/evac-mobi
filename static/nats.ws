@@ -1,1 +1,0 @@
-/home/lix/NetBeansProjects/transport/evac-mobi/node_modules/nats.ws
