@@ -30,13 +30,17 @@ function lookup(a){
         const params = withNum => {
             const _params = new URLSearchParams();
             _params.append('country', 'Россия');
-            if (!!a.city){
-                _params.append('city', a.city.name);
-            }
-            if (!!a.street){
-                _params.append('street', a.street.name);
-                if ((!!a.number)&&(withNum)){
-                    _params.set('street', a.street.name + ' ' + a.number);
+            if (a.q){
+                _params.append('q', a.q);
+            } else {
+                if (!!a.city){
+                    _params.append('city', a.city.name);
+                }
+                if (!!a.street){
+                    _params.append('street', a.street.name);
+                    if ((!!a.number)&&(withNum)){
+                        _params.set('street', a.street.name + ' ' + a.number);
+                    }
                 }
             }
             _params.append('format', 'json');

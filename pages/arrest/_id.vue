@@ -1,20 +1,17 @@
 <template>
-    <v-form v-on:submit.stop.prevent="save"
-            ref="form"
-            :readonly="readonly">
-        <v-card class="ev-arrest"
-                tile>
-            <v-toolbar dark
-                       elevation="0"
-                       color="primary">
-                <v-toolbar-title>
-                    <v-btn block
-                           text
-                           tile
-                           class="address"
-                           v-on:click="get('addr')">
-                        <v-icon v-if="has('new')">mdi-plus</v-icon>
-                        <v-icon v-else>mdi-application-edit-outline</v-icon>
+    <div>
+        <v-form v-on:submit.stop.prevent="save"
+                ref="form"
+                :readonly="readonly">
+            <v-card class="ev-arrest"
+                    tile>
+                <v-toolbar dark
+                           elevation="0"
+                           :color="handInput ? 'blue-grey' : 'primary'"
+                           v-on:click.stop.prevent="get('addr')"
+                           height="auto"
+                           class="py-2">
+                        <v-icon class="mr-2">{{has('new') ? 'mdi-plus' : 'mdi-application-edit-outline'}}</v-icon>
                         <div>
                             {{ address }}
                             <div class="coords">
@@ -22,158 +19,180 @@
                             </div>
                         </div>
                         <v-icon>{{ has('fine') ? 'mdi-map-marker' : 'mdi-map-marker-alert'}}</v-icon>
-                    </v-btn>
-                </v-toolbar-title>
-            </v-toolbar>
-            <v-card-text>
-                <v-row class="text-subtitle-1">
-                    <v-col>Информация о задержании&nbsp;<v-icon>mdi-chevron-down</v-icon></v-col>
-                </v-row>
-                <v-row>
-                    <v-col cols="12" sm="6">
-                        <v-text-field label="Дата, время оформления"
-                                      v-model="at"
-                                      hide-details
-                                      readonly>
-                        </v-text-field>
-                    </v-col>
-                    <v-col cols="12" sm="6">
-                        <v-autocomplete label="Статус"
-                                    item-text="name"
-                                    item-value="id"
-                                    hide-details
-                                    eager
-                                    :return-object="false"
-                                    :items="statuses"
-                                    :rules="[ rules.empty ]" 
-                                    v-model="row.stateid">
-                        </v-autocomplete>
-                    </v-col>
-                </v-row>
-                <v-row>
-                    <v-col cols="12" sm="6">
-                        <v-autocomplete label="Район/МО"
-                                    item-text="city"
-                                    item-value="id"
-                                    hide-details
-                                    :return-object="false"
-                                    :items="cities"
-                                    :rules="[ rules.empty ]" 
-                                    v-model="row.cityid">
-                        </v-autocomplete>
-                    </v-col>
-                    <v-col cols="12" sm="6">
-                        <v-autocomplete label="Причина задержания"
-                                    id="offensereason"
-                                    v-model="row.reasonid"
-                                    item-text="offensereason"
-                                    item-value="id"
-                                    eager
-                                    :return-object="false"
-                                    :items="causes"
-                                    :rules="[ rules.empty ]" 
-                                    hide-details>
-                        </v-autocomplete>
-                    </v-col>
-                </v-row>
-                <v-row class="text-subtitle-1">
-                    <v-col>Информация о ТС&nbsp;<v-icon>mdi-chevron-down</v-icon></v-col>
-                </v-row>
-                <v-row>
-                    <v-col cols="12" sm="6">
-                        <v-combobox label="Марка/модель ТС"
-                                        v-model="row.vehiclekindname"
-                                        item-text="vehiclekindname"
-                                        item-value="vehiclekindname"
+                </v-toolbar>
+                <v-card-text>
+                    <v-row class="text-subtitle-1">
+                        <v-col>Информация о задержании&nbsp;<v-icon>mdi-chevron-down</v-icon></v-col>
+                    </v-row>
+                    <v-row v-if="handInput" class="hand-address">
+                        <v-col cols="12">
+                            <v-text-field label="Адрес места нарушения"
+                                          v-model="row.offenseaddress"
+                                          clearable
+                                          name="offenseaddress"
+                                          :messages="coords"
+                                          :error="has('addr-err')"
+                                          v-on:click:clear="set('addr', '')">
+                            </v-text-field>
+                        </v-col>
+                        <v-col cols="12" class="text-center">
+                            <v-btn tile
+                                   outlined
+                                   color="blue-grey"
+                                   v-on:click="lookup">
+                                определить координаты
+                            </v-btn>
+                        </v-col>
+                    </v-row>
+                    <v-row>
+                        <v-col cols="12" sm="6">
+                            <v-text-field label="Дата, время оформления"
+                                          v-model="at"
+                                          hide-details
+                                          readonly>
+                            </v-text-field>
+                        </v-col>
+                        <v-col cols="12" sm="6">
+                            <v-autocomplete label="Статус"
+                                        item-text="name"
+                                        item-value="id"
+                                        hide-details
+                                        eager
+                                        :return-object="false"
+                                        :items="statuses"
+                                        :rules="[ rules.empty ]" 
+                                        v-model="row.stateid">
+                            </v-autocomplete>
+                        </v-col>
+                    </v-row>
+                    <v-row>
+                        <v-col cols="12" sm="6">
+                            <v-autocomplete label="Район/МО"
+                                        item-text="city"
+                                        item-value="id"
+                                        hide-details
+                                        :return-object="false"
+                                        :items="cities"
+                                        :rules="[ rules.empty ]" 
+                                        v-model="row.cityid">
+                            </v-autocomplete>
+                        </v-col>
+                        <v-col cols="12" sm="6">
+                            <v-autocomplete label="Причина задержания"
+                                        id="offensereason"
+                                        v-model="row.reasonid"
+                                        item-text="offensereason"
+                                        item-value="id"
+                                        eager
+                                        :return-object="false"
+                                        :items="causes"
+                                        :rules="[ rules.empty ]" 
+                                        hide-details>
+                            </v-autocomplete>
+                        </v-col>
+                    </v-row>
+                    <v-row class="text-subtitle-1">
+                        <v-col>Информация о ТС&nbsp;<v-icon>mdi-chevron-down</v-icon></v-col>
+                    </v-row>
+                    <v-row>
+                        <v-col cols="12" sm="6">
+                            <v-combobox label="Марка/модель ТС"
+                                            v-model="row.vehiclekindname"
+                                            item-text="vehiclekindname"
+                                            item-value="vehiclekindname"
+                                            :return-object="false"
+                                            hide-details
+                                            eager
+                                            :rules="[ rules.empty ]" 
+                                            :items="vcmarks">
+                            </v-combobox>
+                        </v-col>
+                        <v-col cols="12" sm="6">
+                            <v-text-field label="Гос.знак"
+                                          v-model="row.vehicleregnum"
+                                          clearable
+                                          :rules="[ rules.empty ]" 
+                                          hide-details>
+                            </v-text-field>
+                        </v-col>
+                    </v-row>
+    <template v-if="!has('new')">
+                    <v-row class="text-subtitle-1">
+                        <v-col>Информация о перемещении&nbsp;<v-icon>mdi-chevron-down</v-icon></v-col>
+                    </v-row>
+                    <v-row>
+                        <v-col cols="12" sm="6">
+                            <v-autocomplete label="Эвакуатор"
+                                        item-text="govnum"
+                                        item-value="id"
                                         :return-object="false"
                                         hide-details
                                         eager
-                                        :rules="[ rules.empty ]" 
-                                        :items="vcmarks">
-                        </v-combobox>
-                    </v-col>
-                    <v-col cols="12" sm="6">
-                        <v-text-field label="Гос.знак"
-                                      v-model="row.vehicleregnum"
-                                      clearable
-                                      :rules="[ rules.empty ]" 
-                                      hide-details>
-                        </v-text-field>
-                    </v-col>
-                </v-row>
-<template v-if="!has('new')">
-                <v-row class="text-subtitle-1">
-                    <v-col>Информация о перемещении&nbsp;<v-icon>mdi-chevron-down</v-icon></v-col>
-                </v-row>
-                <v-row>
-                    <v-col cols="12" sm="6">
-                        <v-autocomplete label="Эвакуатор"
-                                    item-text="govnum"
-                                    item-value="id"
-                                    :return-object="false"
-                                    hide-details
-                                    eager
-                                    :items="evacs"
-                                    v-model="row.vehicleevacid">
-                            <template v-slot:item="{ item }">
-                                <div style="width:100%;margin-bottom:0.5rem;">
-                                    {{ item.govnum }}
-                                    <div class="text-truncate text-caption">
-                                       {{ item.vcvehicleCrridOrgidShortname }}
-                                    </div>
-                                </div>    
-                            </template>
-                        </v-autocomplete>
-                    </v-col>
-                    <v-col cols="12" sm="6">
-                        <v-autocomplete label="Стоянка"
-                                    item-text="name"
-                                    item-value="id"
-                                    hide-details
-                                    :return-object="false"
-                                    eager
-                                    :items="parkings"
-                                    v-on:input="onparking"
-                                    v-model="row.parkingid">
-                        </v-autocomplete>
-                    </v-col>
-                </v-row>
-                <v-row>
-                    <v-col cols="12" sm="6">
-                    </v-col>
-                    <v-col cols="12" sm="6">
-                        <v-text-field ref="arrival"
-                                      label="Расч.время прибытия на стоянку"
-                                      v-model="row.arrivaltime"
-                                      readonly
-                                      hide-details>
-                        </v-text-field>
-                    </v-col>
-                </v-row>
-</template>
-            </v-card-text>
-            <v-card-actions class="py-5">
-                <v-btn color="grey"
-                       outlined
-                       replace
-                       tile
-                       :to="{name:'index'}">
-                    <v-icon>mdi-chevron-left</v-icon>
-                </v-btn>
-                <v-btn type="submit"
-                       tile
-                       color="primary">
-                        {{ has('new') ? 'оформить' : 'изменить' }}&nbsp;
-                        <v-icon small class="mdi-rotate-315">mdi-send</v-icon>
-                </v-btn>
-            </v-card-actions>
-        </v-card>
-    </v-form>    
+                                        :items="evacs"
+                                        v-model="row.vehicleevacid">
+                                <template v-slot:item="{ item }">
+                                    <div style="width:100%;margin-bottom:0.5rem;">
+                                        {{ item.govnum }}
+                                        <div class="text-truncate text-caption">
+                                           {{ item.vcvehicleCrridOrgidShortname }}
+                                        </div>
+                                    </div>    
+                                </template>
+                            </v-autocomplete>
+                        </v-col>
+                        <v-col cols="12" sm="6">
+                            <v-autocomplete label="Стоянка"
+                                        item-text="name"
+                                        item-value="id"
+                                        hide-details
+                                        :return-object="false"
+                                        eager
+                                        :items="parkings"
+                                        v-on:input="onparking"
+                                        v-model="row.parkingid">
+                            </v-autocomplete>
+                        </v-col>
+                    </v-row>
+                    <v-row>
+                        <v-col cols="12" sm="6">
+                        </v-col>
+                        <v-col cols="12" sm="6">
+                            <v-text-field ref="arrival"
+                                          label="Расч.время прибытия на стоянку"
+                                          v-model="row.arrivaltime"
+                                          readonly
+                                          hide-details>
+                            </v-text-field>
+                        </v-col>
+                    </v-row>
+    </template>
+                </v-card-text>
+                <v-card-actions class="py-5">
+                    <v-btn color="grey"
+                           outlined
+                           replace
+                           tile
+                           :to="{name:'index'}">
+                        <v-icon>mdi-chevron-left</v-icon>
+                    </v-btn>
+                    <v-btn type="submit"
+                           tile
+                           color="primary">
+                            {{ has('new') ? 'оформить' : 'изменить' }}&nbsp;
+                            <v-icon small class="mdi-rotate-315">mdi-send</v-icon>
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-form>
+        <eva-addr-chooser ref="achooser" 
+                          v-on:addr="set('addr', $event)" />
+    </div>    
 </template>
 <script>
 import { mapState } from 'vuex';
 import { isEmpty, MODES, NULL_ID  } from "~/utils/";
 import { codec } from "~/utils/http";
+import EvaAddrChooser from "~/components/EvaAddrChooser";
 
 import geo from "~/utils/geo.js";
 const $moment = require('moment');
@@ -191,6 +210,9 @@ var _ws = null;
 export default {
     name: "EvArrest",
     middleware: 'auth',
+    components: {
+        EvaAddrChooser
+    },
     async asyncData({store, params}) {
         
         Object.keys(_SIN2_VIEWS_IDS).map( async k => {
@@ -214,6 +236,7 @@ export default {
             row.at = $moment();
             row.coords = await store.dispatch("geo/current");
             row.cityid = store.getters["profile/region"]?.cityid;
+            row.offenseaddress = geo.a2s(store.state.geo.addr?.address);
         } else {
             const res = await store.dispatch("data/transport", params.id);
             row = {...res[0]};
@@ -232,6 +255,7 @@ export default {
         return {
             MODES, 
             mode: MODES.default,
+            handInput: false,
             rules: {
                 empty: val => !isEmpty(val) || "Необходимо заполнить"
             }
@@ -241,6 +265,7 @@ export default {
         if (!this.row){
             return;
         }
+        this.handInput = false;
         //Def`s for new record
         if ( this.has('new') ){
             /** defs: status, parking */
@@ -273,7 +298,6 @@ export default {
         }   // if ( isEmpty...
     },      // fetch
     mounted(){
-        console.log('row', this.row);
         this.$nextTick(()=>{
             $(this.$el).find("#offensereason").focus();
         });
@@ -283,11 +307,7 @@ export default {
             return this.mode !== MODES.default;
         },
         address(){
-            if ( this.has('new') ) {
-                return geo.a2s(this.$store.state.geo.addr?.address);
-            } else {
-                return this.row.offenseaddress;
-            }
+            return this.row?.offenseaddress || '';
         },
         coords(){
             if (!!this.row?.coords){
@@ -317,23 +337,60 @@ export default {
         get(q, val){
             switch(q){
                 case "addr":
-                    if ( isEmpty(this.row.id) ){
+                    if ( this.has('new') ){
                         ( async ()=>{
                             this.row.coords = await this.$store.dispatch("geo/current");
+                            this.handInput = true;
+                            if ( isEmpty(this.row.offenseaddress) ){
+                                this.row.offenseaddress = geo.a2s(this.$store.state.geo.addr?.address);
+                            }
+                            this.$nextTick(()=>{
+                                $(this.$el).find("input").trigger("focus");
+                            });
                             this.$forceUpdate();
                         })();
                     }
                     break;
             }
         },
+        set(q, val){
+            switch(q){
+                case "addr":
+                    if ( (val)&&(typeof val === "object") ){
+                        this.row.offenseaddress = val.display_name;
+                        this.row.coords = {lon: val.lon, lat: val.lat};
+                        this.$nextTick(()=>{
+                            const el = $(this.$el).find(".hand-address");
+                            el.css({opacity: 0, "background-color": "#FFF9C4", color: "#fff"})
+                              .animate({opacity: 1}, 'slow', 'linear', ()=>el.css({"background-color": "transparent", color: "initial"}));
+                        });
+                    } else {
+                        this.row.offenseaddress = val;
+                    }
+                    if ( isEmpty(this.row.offenseaddress) ){
+                        this.row.coords = {lat: 0, lon: 0};
+                    }
+            }
+        },
         has(q){
             switch(q){
+                case 'addr-err':
+                    return (!this.row.coords?.lat) || (!this.row.coords?.lon);
                 case "fine":
                     return !!this.$store.state.geo.ll.fine;
                 case 'new':
                     return (!this.row?.id)||(NULL_ID === this.row.id);
             }
             return false;
+        },
+        lookup(){
+            this.$refs["achooser"].open(this.row.offenseaddress);
+/*            
+            geo.lookup({q: this.row.offenseaddress}).then( res => {
+                console.log('lookup', res);
+            });
+* 
+*/
         },
         async save(){
             if ( !this.$refs["form"].validate() ){
@@ -419,28 +476,18 @@ export default {
     .ev-arrest{
         & .v-toolbar{
             height: fit-content;
-            font-size: 1rem;
+            font-size: 0.9rem;
+            line-height: 1.125;
             &__content{
-                padding: 0;
-            }
-            &__title{
-                width: 100%;
-            }
-        }
-        & .v-btn.address {
-            height: fit-content;
-            padding: 8px 16px;
-            & .v-btn__content{
-                height: fit-content;
                 justify-content: space-between;
+            }
+            & .address {
                 width: 100%;
-                & > div:first-child{
-                    font-weight: normal;
-                    width: calc(100% - 32px);
-                    white-space: normal;
-                    word-break: normal;
-                }
-                & .coords{
+                height: fit-content;
+                padding: 8px 16px;
+                justify-content: space-between;
+                line-height: 1.125;
+                & .coords {
                     font-size: 0.55rem;
                 }
             }

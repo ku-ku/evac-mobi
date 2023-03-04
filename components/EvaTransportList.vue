@@ -189,7 +189,7 @@ export default {
                                   /(работ)+/gi.test(a.evacoffensejournalStateidName)
                                || /(назнач)+/gi.test(a.evacoffensejournalStateidName)
                             );
-                a.active = true;    
+                //a.active = true;    //TODO: for testing
             });
             
             this.all = all;
