@@ -93,7 +93,8 @@
                    :loading="mode === MODES.loading">
                 <v-icon small>mdi-tow-truck</v-icon>&nbsp;выбрать
             </v-btn>
-        </v-form>    
+        </v-form>
+        <eva-gov-list />
     </div>
 </template>
 <script>

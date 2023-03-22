@@ -2,29 +2,42 @@
   <v-list>
     <v-list-item v-on:click="go" v-for="gov in govs">
       {{ gov.gov }} <br>
-      {{ gov.data }}
+      {{ gov.dt }}
     </v-list-item>
   </v-list>
 </template>
 <script>
+const _LS_KEY = 'saved-govs';
 
   export default {
-    name: 'EvaGovNum',
+    name: 'EvaGovList',
     data() {
+      const govs = [{
+        govnum: 1,
+        dt: new Date(),
+        id: 1000
+      }];
+
       return {
-        govs : [{gov:(n), dt:(data), id:(idgov)}]
+        govs
       }
     },
 
     created(){
-      //this.govs = JSON.parse(govs)
+      this.govs = JSON.parse(localStorage.getItem(_LS_KEY)) || [];
     },
 
     methods: {
       go(gov) {
       gov.dt = new Date();
-      JSON.setItem('govs', JSON.stringify(this.govs))
+      localStorage.setItem('govs', JSON.stringify(this.govs))
       this.$emit('go',gov)
+      },
+
+      save(gov){
+        gov.dt = new Date();
+        this.govs.push(gov);
+        localStorage.setItem(_LS_KEY, JSON.stringify(this.gov));
       }
     },
   }
