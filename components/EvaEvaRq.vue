@@ -94,7 +94,7 @@
                 <v-icon small>mdi-tow-truck</v-icon>&nbsp;выбрать
             </v-btn>
         </v-form>
-        <eva-gov-list></eva-gov-list>
+        <eva-gov-list ref="govnums"></eva-gov-list>
     </div>
 </template>
 <script>

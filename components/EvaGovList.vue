@@ -1,9 +1,10 @@
 <template>
   <v-list>
-    <v-list-item v-on:click="go" v-for="gov in govs">
+    <v-list-item v-on:click="go" v-for="gov in govs" :key="govnums">
       132
-      {{ gov.gov }} <br>
-      {{ gov.dt }}
+      {{ gov.govnum }} <br>
+      {{ gov.dt }} <br>
+      {{ gov.id }}
     </v-list-item>
   </v-list>
 </template>
@@ -21,7 +22,7 @@ const _LS_KEY = 'saved-govs';
 
       return {
         govs
-      }
+      };
     },
 
     created(){
@@ -30,9 +31,9 @@ const _LS_KEY = 'saved-govs';
 
     methods: {
       go(gov) {
-      gov.dt = new Date();
-      localStorage.setItem('govs', JSON.stringify(this.govs))
-      this.$emit('go',gov)
+        gov.dt = new Date();
+        localStorage.setItem('govs', JSON.stringify(this.govs))
+        this.$emit('go',gov)
       },
 
       save(gov){
