@@ -60,19 +60,18 @@ moment.locale('ru');
         }
         localStorage.setItem(_LS_KEY, JSON.stringify(this.govs));
       },
-
-      computed: {
-        govs2(){
-          return this.govs?.map( g =>{
-            g.dt = moment(g.dt).toDate();
-            return g;
-          }).sort((g1, g2) => {
-            console.log(g1, g2);
-            return g2.dt.getTime() - g1.dt.getTime();
-          }) || []
-        }
-      }
     },
+    computed: {
+      govs2(){
+        return this.govs?.map( g =>{
+          g.dt = moment(g.dt).toDate();
+          return g;
+        }).sort((g1, g2) => {
+          console.log(g1, g2);
+          return g2.dt.getTime() - g1.dt.getTime();
+        }) || []
+      },
+    }
   }
 </script>
 <style lang="scss">
