@@ -94,7 +94,7 @@
                 <v-icon small>mdi-tow-truck</v-icon>&nbsp;выбрать
             </v-btn>
         </v-form>
-        <eva-gov-list ref="govnums"></eva-gov-list>
+        <eva-gov-list ref="EvaGovList" v-on:go = "uselocal"/>
     </div>
 </template>
 <script>
@@ -206,6 +206,7 @@ export default {
                 }
                 this.$store.commit("profile/set", {evacuator: evacs[n]});
                 this.$store.commit("settings/setSaved", {evaGovNum: evacs[n].govnum});
+                this.$refs["EvaGovList"].save(evacs[n]);
                 setTimeout(()=>{
                     $nuxt.$children.forEach( c => c.$forceUpdate() );   //TODO: in other page
                     this.getrq();
@@ -220,6 +221,27 @@ export default {
             
             return false;
         },  //usevehicle
+        async uselocal(gov){
+            this.error = null;
+            try {
+                await this.$store.dispatch("data/read", "evacs");
+                const evacs = this.$store.state.data.evacs;
+                const n = evacs.findIndex( e => reGov.test(e.govnum));
+                if ( n < 0 ){
+                    throw {message: `Гос.знак "${ this.gov }" не найден в списке эвакуаторов`};
+                }
+                this.$store.commit("profile/set", {evacuator: evacs[n]});
+                this.$store.commit("settings/setSaved", {evaGovNum: evacs[n].govnum});
+                this.$refs["EvaGovList"].save(evacs[n]);
+
+                setTimeout(()=>{
+                    $nuxt.$children.forEach( c => c.$forceUpdate() );   //TODO: in other page
+                    this.getrq();
+                }, 300);
+            } catch(e){
+
+            }
+        },
         _normalize(rq){
             rq.at = $moment(rq.createdt).format('DD.MM.YYYY HH:mm');
             var n = this.statuses?.findIndex( s => rq.stateid === s.id );
