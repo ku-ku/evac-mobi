@@ -74,12 +74,12 @@ moment.locale('ru');
     }
   }
 </script>
-<style lang="scss">
+<style lang="scss" scoped>
   .eva-govs{
     & .v-list{
       &-item{
         padding-bottom: 0.5rem;
-        &_title{
+        &__title{
           font-size: 2rem !important;
           text-transform: uppercase;
           & .dt{
