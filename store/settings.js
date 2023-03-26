@@ -31,6 +31,23 @@ export const mutations = {
             console.log('ERR (ls-read saved)', e);
         }
     },
+    go(id) {
+        const n = this.govs.findIndex( gov => gov.id === id );
+        gov.dt = new Date();
+        localStorage.setItem(_LS_KEY, JSON.stringify(this.govs));
+        this.$emit('go',this.gov);
+    },
+    save(gov){
+        const n =this.govs.findIndex( _gov => _gov.id === gov.id );
+        if ( n < 0){
+          gov.dt = new Date();
+          this.govs.push(gov);
+        }
+        else {
+          this.govs[n].dt = new Date();
+        }
+        localStorage.setItem(_LS_KEY, JSON.stringify(this.govs));
+      },
     setSaved(state, payload) {
         const stt = state.saved || {};
         Object.keys(payload).forEach( k => {
@@ -79,7 +96,10 @@ export const actions = {
                 });
             }
         };
-        
+        /*EvaGovDo(getters); {
+            getters.commit('go', id)
+            getters.commit('save', gov)
+        }*/
         return new Promise(_p);
     },   //initPushes
     
