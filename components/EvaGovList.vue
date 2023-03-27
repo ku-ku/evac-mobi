@@ -3,7 +3,7 @@
     <v-list v-if="(govs.length > 0)">
       <v-list-item v-for="gov in govs2" 
                    :key="gov.id" 
-                   v-on:click="go" >
+                   v-on:click='EvaGovDo'>
         <v-list-item-title>
           {{ gov.govnum }}
             <div class="dt">
@@ -30,23 +30,28 @@ moment.locale('ru');
       }
     },
 
-    created(){
-      this.govs = JSON.parse(localStorage.getItem(_LS_KEY)) || [];
+    async created(){
+      //this.govs = JSON.parse(localStorage.getItem(_LS_KEY)) || [];
+      //this.$store.dispatch('EvaGovDo')
     },
     methods: {
     },
     computed: {
-      govs2(){
+      gov(){
+        return this.$store.getters(settings/gov);
+      }
+      /*govs2(){
         return this.govs?.map( g => {
           g.dt = moment(g.dt).toDate();
           return g;
         }).sort( (g1, g2) => {
           console.log(g1, g2);
           return g2.dt.getTime() - g1.dt.getTime();
-        }) || []
+        }) || []*/
       }
-    }
-  }
+    };
+
+  
 </script>
 <style lang="scss" scoped>
   .eva-govs{
