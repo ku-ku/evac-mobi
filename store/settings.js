@@ -112,10 +112,10 @@ export const actions = {
                 });
             }
         };
-        EvaGovDo(); {
+        /*EvaGovDo({commit}); {
             commit('go', id)
             commit('save', gov)
-        }
+        }*/
         return new Promise(_p);
     },   //initPushes
     
@@ -135,7 +135,7 @@ export const actions = {
 
 export const getters = {
     go: state => g =>{
-        return govs;
+        return this.$store.setItem({_LS_KEY: this.govs});
     },
     env: state => q =>{
         return (!!q) ? state.env[q] : state.env;
