@@ -9,7 +9,11 @@ export const state = () => ({
     env: undefined,
     quality: -1,
     saved: {},
-    // govs: []
+    govs : [{
+        govnum: 1,
+        dt: new Date(),
+        id: 10000   
+    }]
 });
 
 export const mutations = {
@@ -27,12 +31,12 @@ export const mutations = {
             const s = window.localStorage.getItem(_LS_SETTS_KEY);
             if ( (s) && /^\{+/.test(s) ){
                 state.saved = JSON.parse(s);
-                
-            return this.govs?.map ( g => {
-                g.dt = moment(g.dt).toDate();
+                state.saved = evaGovNums;
+            return this.evaGovNums?.map ( g => {
+                g.dt = moment(g.dt);
                 return g;
             }) .sort( (g1, g2) => {
-                return g2.dt.getTime() - g1.dt.getTime();
+                return g2.dt.isBefore(g1.dt) ? -1 : 1;
             } ) || [];
             }
         } catch(e){
@@ -47,10 +51,6 @@ export const mutations = {
         state.saved = stt;
         window.localStorage.setItem(_LS_SETTS_KEY, JSON.stringify(stt));
     },  //setSaved
-
-    // updategovnum(state, govs ) {
-    //     state.govs = govs
-    // }
 
 };  //mutations 
 
@@ -108,26 +108,6 @@ export const actions = {
             });
         }
     },
-
-    // go(id){
-    //     const n = this.govs.findIndex( gov => gov.id === id);
-    //     this.govs[n].dt = new Date();
-    //     localStorage.setItem(_LS_KEY, JSON.stringify(this.govs));
-
-    //     this.$emit('go', this.govs[n]);
-    // },
-    
-    // save(gov){
-    //     const n = this.govs.findIndex( _gov => _gov.id === gov.id );
-    //     if ( n < 0 ) {
-    //         gov.dt = new Date();
-    //         this.govs.push(gov);
-    //     } else {
-    //         this.govs[n].dt = new Date();
-    //     }
-    //     localStorage.setItem(_LS_KEY, JSON.stringify(this.govs));
-    // }
-
 };
 
 export const getters = {
@@ -139,6 +119,7 @@ export const getters = {
         return res;        
     },
     govs: state => q =>{
-        this.$store.setItem({evaGovNums: this.govs})
+        // this.$store.setItem({evaGovNums: this.govs})
+        state.$store.evaGovNums = govs[q];
     }
 };
