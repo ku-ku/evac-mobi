@@ -1,7 +1,7 @@
 <template>
     <div class="eva-govs">
         <v-list v-if="(govs.length > 0)">
-            <v-list-item v-for="gov in govs2"
+            <v-list-item v-for="gov in govs"
                           :key="gov.id"
                           v-on:click="go(gov.id)">
                 <v-list-item-title>
@@ -25,28 +25,16 @@ moment.locale('ru');
 export default {
     name: 'EvaGovList',
     data(){
-        // const govs = [{
-        //     govnum: 1,
-        //     dt: new Date(),
-        //     id: 10000   
-        // }];
-
         return { 
             moment
-            // govs
         };
     },
-
-    // created(){
-    //     this.govs = JSON.parse(localStorage.getItem(_LS_KEY)) || [];
-    // },
 
     methods:{
         go(id){
             const n = this.govs.findIndex( gov => gov.id === id);
             this.govs[n].dt = new Date();
              this.govs[q] = this.$store.getters["settings/govs"];
-            // localStorage.setItem(_LS_KEY, JSON.stringify(this.govs));
             this.$emit('go', this.govs[n]);
         },
         
@@ -58,24 +46,14 @@ export default {
             } else {
                 this.govs[n].dt = new Date();
             }
-            // localStorage.setItem(_LS_KEY, JSON.stringify(this.govs));
             this.govs[q] = this.$store.getters["settings/govs"];
         }
     },
     computed: {
-        govs2(){
-            // return this.govs?.map ( g => {
-            //     g.dt = moment(g.dt).toDate();
-            //     return g;
-            // }) .sort( (g1, g2) => {
-            //     return g2.dt.getTime() - g1.dt.getTime();
-            // } ) || [];
+        govs(){
             return this.$store.getters["settings/govs"]
 
-        },
-            // govnumbs() {
-            //     return this.$store.getters.evagovnums;
-            // }
+        }
     }
 }
 </script>
