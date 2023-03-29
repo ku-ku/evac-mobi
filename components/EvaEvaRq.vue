@@ -94,9 +94,10 @@
                 <v-icon small>mdi-tow-truck</v-icon>&nbsp;выбрать
             </v-btn>
         </v-form>
-        <eva-gov-list ref="EvaGovList" v-on:go = "uselocal"/>
+        <eva-gov-list ref="EvaGovList" v-on:go ="uselocal"/>
     </div>
 </template>
+
 <script>
 import { mapState } from 'vuex';
 import VuePullRefresh from 'vue-pull-refresh';
@@ -104,7 +105,8 @@ import { isEmpty, MODES } from "~/utils";
 import { sin2obj } from "~/store/data";
 const $moment = require("moment");
 $moment.locale('ru');
-
+const now = $moment().format("DD.MM.YYYY");
+const PAGE_SIZE = 20;
 
 const _VIEW_ID = "8190818d-bf31-41d3-8e3c-08582b85f7e9";
 const _VIEW_URI= `sin2:/v:${ _VIEW_ID }`;
@@ -135,6 +137,7 @@ export default {
     mounted(){
         this.gov = this.$store.state.settings.saved?.evaGovNum;
     },
+    
     async fetch(){
         try {
             await this.$store.dispatch("data/read", "statuses");
@@ -206,15 +209,16 @@ export default {
                 }
                 this.$store.commit("profile/set", {evacuator: evacs[n]});
                 this.$store.commit("settings/setSaved", {evaGovNum: evacs[n].govnum});
-                this.$refs["EvaGovList"].save(evacs[n]);
+                this.$refs["EvaGovList"].save(evacs[n]); 
                 setTimeout(()=>{
-                    $nuxt.$children.forEach( c => c.$forceUpdate() );   //TODO: in other page
+                    $nuxt.$children.forEach( c => c.$forceUpdate() ); //TODO: in other page
                     this.getrq();
                 }, 300);
             } catch(e){
                 console.log('ERR usevehicle', e);
                 this.error = e;
                 this.$nextTick(()=>{ $(this.$el).find("input").focus(); });
+                
             } finally {
                 this.mode = MODES.default;
             }
@@ -233,7 +237,6 @@ export default {
                 this.$store.commit("profile/set", {evacuator: evacs[n]});
                 this.$store.commit("settings/setSaved", {evaGovNum: evacs[n].govnum});
                 this.$refs["EvaGovList"].save(evacs[n]);
-
                 setTimeout(()=>{
                     $nuxt.$children.forEach( c => c.$forceUpdate() );   //TODO: in other page
                     this.getrq();
@@ -379,7 +382,6 @@ export default {
             this.getrq(this.rq?.id);
         }
     }
-    
 }    
 </script>
 <style lang="scss">
