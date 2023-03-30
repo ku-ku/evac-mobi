@@ -44,8 +44,7 @@ export const mutations = {
                       return g2.dt.getTime() - g1.dt.getTime();
                     }) || [],
                 state.saved = JSON.parse(s);
-                state.saved = evaGovNums;
-            return this.evaGovNums?.map ( g => {
+                state.saved.govs = state.saved.govs?.map ( g => {
                 g.dt = moment(g.dt);
                 return g;
             }) .sort( (g1, g2) => {
@@ -157,8 +156,7 @@ export const getters = {
         var res = state.env[q];
         return res;        
     },
-    govs: state => q =>{
-        // this.$store.setItem({evaGovNums: this.govs})
-        state.$store.evaGovNums = govs[q];
+    govs: state =>{ 
+        return state.saved.govs;
     }
 };
