@@ -33,23 +33,26 @@ export default {
 
     methods:{
         go(id){
-            const n = this.govs.findIndex( gov => gov.id === id);
-            this.govs[n].dt = new Date();
-             this.govs[q] = this.$store.getters["settings/govs"];
-            this.$emit('go', this.govs[n]);
+            this.$store.commit('go', {id})
+            // const n = this.govs.findIndex( gov => gov.id === id);
+            // this.govs[n].dt = new Date();
+            // this.govs[q] = this.$store.getters["settings/govs"];
+            // this.$emit('go', this.govs[n]);
         },
         
         save(gov){
-            const n = this.govs.findIndex( _gov => _gov.id === gov.id );
-            if ( n < 0 ) {
-                gov.dt = new Date();
-                this.govs.push(gov);
-            } else {
-                this.govs[n].dt = new Date();
-            }
-            this.govs[q] = this.$store.getters["settings/govs"];
-        }
-    },
+            this.$store.commit('save', {gov})
+         //     const n = this.govs.findIndex( _gov => _gov.id === gov.id );
+        //     if ( n < 0 ) {
+        //         gov.dt = new Date();
+        //         this.govs.push(gov); 
+        //     } else {
+        //         this.govs[n].dt = new Date();
+        //     }
+        //     this.govs[q] = this.$store.getters["settings/govs"];
+        // }
+    }
+},
     computed: {
         govs(){
             return this.$store.getters["settings/govs"]
