@@ -1,8 +1,14 @@
 const _LS_SETTS_KEY = '_eva_setts';
+const _LS_KEY = 'saved-govs';
 
 var PushController;
 
 export const state = () => ({
+    govs: {
+        govnums: 1,
+        dt: new Date(),
+        id: 1000
+    },
     notifi: {
         fcmId: undefined
     },
@@ -30,6 +36,13 @@ export const mutations = {
         try {
             const s = window.localStorage.getItem(_LS_SETTS_KEY);
             if ( (s) && /^\{+/.test(s) ){
+                    return this.govs?.map( g => {
+                      g.dt = moment(g.dt).toDate();
+                      return g;
+                    }).sort( (g1, g2) => {
+                      console.log(g1, g2);
+                      return g2.dt.getTime() - g1.dt.getTime();
+                    }) || [],
                 state.saved = JSON.parse(s);
                 state.saved.govs = state.saved.govs?.map ( g => {
                 g.dt = moment(g.dt);
@@ -60,7 +73,7 @@ export const mutations = {
         }
         state.saved.govs[q] = state.saved.$store.getters["settings/govs"];
     },
-
+    
     setSaved(state, payload) {
         const stt = state.saved || {};
         Object.keys(payload).forEach( k => {
@@ -110,7 +123,10 @@ export const actions = {
                 });
             }
         };
-        
+        /*EvaGovDo({commit}); {
+            commit('go', id)
+            commit('save', gov)
+        }*/
         return new Promise(_p);
     },   //initPushes
     
@@ -129,6 +145,9 @@ export const actions = {
 };
 
 export const getters = {
+    go: state => g =>{
+        return this.$store.setItem({_LS_KEY: this.govs});
+    },
     env: state => q =>{
         return (!!q) ? state.env[q] : state.env;
     },

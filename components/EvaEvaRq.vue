@@ -210,7 +210,6 @@ export default {
                 this.$store.commit("profile/set", {evacuator: evacs[n]});
                 this.$store.commit("settings/setSaved", {evaGovNum: evacs[n].govnum});
                 this.$refs["EvaGovList"].save(evacs[n]); 
-                
                 setTimeout(()=>{
                     $nuxt.$children.forEach( c => c.$forceUpdate() ); //TODO: in other page
                     this.getrq();
@@ -238,14 +237,12 @@ export default {
                 this.$store.commit("profile/set", {evacuator: evacs[n]});
                 this.$store.commit("settings/setSaved", {evaGovNum: evacs[n].govnum});
                 this.$refs["EvaGovList"].save(evacs[n]);
-                
                 setTimeout(()=>{
                     $nuxt.$children.forEach( c => c.$forceUpdate() );   //TODO: in other page
                     this.getrq();
                 }, 300);
+            } catch(e){
 
-            } catch(e) {
-                
             }
         },
         _normalize(rq){
