@@ -37,11 +37,30 @@ export const mutations = {
             }) .sort( (g1, g2) => {
                 return g2.dt.isBefore(g1.dt) ? -1 : 1;
             } ) || [];
-            }
+            } 
         } catch(e){
             console.log('ERR (ls-read saved)', e);
         }
     },
+
+    go(state){
+        const n = state.saved.govs.findIndex( gov => gov.id === id);
+        state.saved.govs[n].dt = new Date();
+        state.saved.govs[q] = state.saved.$store.getters["settings/govs"];
+        $emit('go', state.saved.govs[n]);
+    },
+
+    save(state){
+        const n = state.saved.govs.findIndex( _gov => _gov.id === _gov.id );
+        if ( n < 0 ) {
+            gov.dt = new Date();
+            state.saved.govs.push(gov); 
+        } else {
+            state.saved.govs[n].dt = new Date();
+        }
+        state.saved.govs[q] = state.saved.$store.getters["settings/govs"];
+    },
+
     setSaved(state, payload) {
         const stt = state.saved || {};
         Object.keys(payload).forEach( k => {
